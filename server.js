@@ -3,11 +3,6 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const pino = require('pino');
 
-// Importação segura do Baileys (Motor WhatsApp)
-const Baileys = require('@whiskeysockets/baileys');
-const makeWASocket = Baileys.default || Baileys;
-const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = Baileys;
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -33,13 +28,18 @@ db.serialize(() => {
   `);
 });
 
-// Estado da Conexão WhatsApp
+// Estado do WhatsApp
 let sock = null;
 let isConnected = false;
 let userPhone = null;
 
-async function iniciarWhatsApp() {
+// Inicialização Segura com Importação Dinâmica
+async function carregarBaileys() {
   try {
+    const baileys = await import('@whiskeysockets/baileys');
+    const makeWASocket = baileys.default || baileys.makeWASocket || baileys;
+    const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = baileys;
+
     const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, 'auth_info_baileys'));
     const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1015901307] }));
 
@@ -63,22 +63,22 @@ async function iniciarWhatsApp() {
         isConnected = false;
         const statusCode = lastDisconnect?.error?.output?.statusCode;
         const deveReconectar = statusCode !== DisconnectReason.loggedOut;
-        console.log(`[WHATSAPP] Conexão encerrada. Tentando reconectar? ${deveReconectar}`);
+        console.log(`[WHATSAPP] Conexão fechada. Reconectando: ${deveReconectar}`);
         if (deveReconectar) {
-          setTimeout(iniciarWhatsApp, 5000);
+          setTimeout(carregarBaileys, 5000);
         }
       }
     });
   } catch (err) {
-    console.error('[WHATSAPP] Erro de inicialização:', err);
-    setTimeout(iniciarWhatsApp, 10000);
+    console.error('[WHATSAPP] Aviso de inicialização:', err.message);
+    setTimeout(carregarBaileys, 8000);
   }
 }
 
-// Inicia o motor WhatsApp junto com o servidor
-iniciarWhatsApp();
+// Inicia o WhatsApp em segundo plano
+carregarBaileys();
 
-// API 1: Status da conexão
+// 1. Status
 app.get('/api/status', (req, res) => {
   res.json({
     connected: isConnected,
@@ -86,58 +86,50 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// API 2: Solicitar Código de 8 Dígitos (Pairing Code)
+// 2. Gerar Código de Pareamento de 8 dígitos
 app.post('/api/connect/pairing-code', async (req, res) => {
   try {
     const { phone } = req.body;
     if (!phone) return res.status(400).json({ error: 'Número de telefone é obrigatório.' });
 
-    const numeroLimpo = phone.replace(/\D/g, '');
-    if (numeroLimpo.length < 10) {
-      return res.status(400).json({ error: 'Número inválido. Use formato com DDI e DDD (ex: 5511999998888).' });
+    const clean = phone.replace(/\D/g, '');
+    if (clean.length < 10) {
+      return res.status(400).json({ error: 'Número inválido. Use 55 + DDD + Número.' });
     }
 
     if (isConnected) {
-      return res.json({ success: true, alreadyConnected: true, message: 'WhatsApp já está conectado!' });
+      return res.json({ success: true, alreadyConnected: true });
     }
 
-    if (!sock) {
-      return res.status(500).json({ error: 'Serviço WhatsApp iniciando... Aguarde 10 segundos e tente novamente.' });
+    if (!sock || !sock.requestPairingCode) {
+      return res.status(503).json({ error: 'WhatsApp ainda está inicializando na nuvem. Aguarde 10 segundos e tente de novo.' });
     }
 
-    // Solicita o código oficial de pareamento do WhatsApp
-    const codigo = await sock.requestPairingCode(numeroLimpo);
-    console.log(`[WHATSAPP] Código de pareamento gerado para ${numeroLimpo}: ${codigo}`);
-
-    res.json({ success: true, code: codigo });
+    const code = await sock.requestPairingCode(clean);
+    console.log(`[WHATSAPP] Código de pareamento: ${code}`);
+    res.json({ success: true, code });
   } catch (err) {
-    console.error('Erro ao gerar código de pareamento:', err);
-    res.status(500).json({ error: 'Não foi possível gerar o código. Detalhe: ' + err.message });
+    console.error('Erro ao gerar código:', err);
+    res.status(500).json({ error: 'Erro ao gerar código: ' + err.message });
   }
 });
 
-// API 3: Listar Grupos do WhatsApp
+// 3. Grupos
 app.get('/api/groups', async (req, res) => {
   try {
-    if (isConnected && sock) {
+    if (isConnected && sock && sock.groupFetchAllParticipating) {
       const gruposObj = await sock.groupFetchAllParticipating();
-      const grupos = Object.values(gruposObj).map(g => ({
-        id: g.id,
-        name: g.subject
-      }));
+      const grupos = Object.values(gruposObj).map(g => ({ id: g.id, name: g.subject }));
       return res.json(grupos);
     }
-  } catch (err) {
-    console.error('Erro ao buscar grupos reais:', err.message);
-  }
-  // Se ainda não conectou, retorna lista padrão informativa
+  } catch (e) {}
   res.json([
     { id: '120363028392193821@g.us', name: '📢 Avisos e Comunicados (Exemplo)' },
-    { id: '120363028392193822@g.us', name: '👥 Clientes VIP (Exemplo)' }
+    { id: '120363028392193822@g.us', name: '👥 Grupo Clientes VIP (Exemplo)' }
   ]);
 });
 
-// API 4: Listar Agendamentos
+// 4. Listar Agendamentos
 app.get('/api/schedules', (req, res) => {
   db.all('SELECT * FROM schedules ORDER BY scheduled_at ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -145,7 +137,7 @@ app.get('/api/schedules', (req, res) => {
   });
 });
 
-// API 5: Criar Agendamento (suporta múltiplos horários)
+// 5. Criar Agendamento (Múltiplos horários)
 app.post('/api/schedules', (req, res) => {
   const { target, target_type, message, media_url, media_type, scheduled_at, scheduled_at_list } = req.body;
 
@@ -157,7 +149,7 @@ app.post('/api/schedules', (req, res) => {
   }
 
   if (!target || !message || horarios.length === 0) {
-    return res.status(400).json({ error: 'Destino, mensagem e ao menos um horário são obrigatórios.' });
+    return res.status(400).json({ error: 'Destino, mensagem e horário são obrigatórios.' });
   }
 
   const sql = `
@@ -165,19 +157,19 @@ app.post('/api/schedules', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, 'pending')
   `;
 
-  let inseridos = 0;
+  let count = 0;
   db.serialize(() => {
     horarios.forEach(h => {
-      db.run(sql, [target, target_type || 'individual', message, media_url || null, media_type || 'none', h], () => inseridos++);
+      db.run(sql, [target, target_type || 'individual', message, media_url || null, media_type || 'none', h], () => count++);
     });
   });
 
   setTimeout(() => {
-    res.json({ success: true, count: inseridos, message: `${inseridos} envio(s) agendado(s)!` });
+    res.json({ success: true, count, message: `${count} envio(s) programado(s) com sucesso!` });
   }, 100);
 });
 
-// API 6: Cancelar Agendamento
+// 6. Cancelar Agendamento
 app.delete('/api/schedules/:id', (req, res) => {
   db.run('DELETE FROM schedules WHERE id = ?', [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -185,7 +177,7 @@ app.delete('/api/schedules/:id', (req, res) => {
   });
 });
 
-// Cron de Disparo a cada 15 segundos
+// Loop automático de disparos a cada 15 segundos
 setInterval(() => {
   const agora = new Date().toISOString();
   db.all(`SELECT * FROM schedules WHERE status = 'pending' AND scheduled_at <= ?`, [agora], async (err, rows) => {
@@ -193,15 +185,14 @@ setInterval(() => {
 
     for (const item of rows) {
       if (!isConnected || !sock) {
-        console.log(`[DISPARO] Aguardando WhatsApp conectar para enviar ID #${item.id}...`);
+        console.log(`[DISPARO] Aguardando conexão do WhatsApp para enviar #${item.id}...`);
         continue;
       }
 
       try {
         let jid = item.target;
         if (item.target_type === 'individual') {
-          const num = item.target.replace(/\D/g, '');
-          jid = num + '@s.whatsapp.net';
+          jid = item.target.replace(/\D/g, '') + '@s.whatsapp.net';
         }
 
         if (item.media_url && item.media_url.startsWith('data:image')) {
@@ -212,9 +203,9 @@ setInterval(() => {
         }
 
         db.run(`UPDATE schedules SET status = 'sent' WHERE id = ?`, [item.id]);
-        console.log(`[DISPARO] ✅ Mensagem #${item.id} enviada com sucesso para ${item.target}!`);
-      } catch (sendErr) {
-        console.error(`[DISPARO] ❌ Falha ao enviar #${item.id}:`, sendErr.message);
+        console.log(`[DISPARO] ✅ Mensagem #${item.id} enviada para ${item.target}!`);
+      } catch (e) {
+        console.error(`[DISPARO] ❌ Erro ao enviar #${item.id}:`, e.message);
         db.run(`UPDATE schedules SET status = 'failed' WHERE id = ?`, [item.id]);
       }
     }
@@ -226,6 +217,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Iniciar Servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor WhatsApp iniciado com sucesso na porta ${PORT}`);
 });
