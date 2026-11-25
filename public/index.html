@@ -83,9 +83,15 @@
               </div>
 
               <div id="campo-grupo" class="hidden">
-                <select id="select-grupo" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                  <option value="">Carregando grupos...</option>
-                </select>
+                <div class="flex gap-2">
+                  <select id="select-grupo" onchange="atualizarPreviaNome()" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <option value="">Carregando grupos...</option>
+                  </select>
+                  <button type="button" onclick="carregarGrupos()" title="Recarregar grupos" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 shrink-0">
+                    🔄
+                  </button>
+                </div>
+                <p id="hint-grupos" class="text-xs text-gray-400 mt-1 hidden"></p>
               </div>
             </div>
 
@@ -113,7 +119,7 @@
 
               <div id="container-horarios" class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <input type="datetime-local" class="input-horario w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                  <input type="datetime-local" onchange="atualizarPreviaHora()" class="input-horario w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required>
                 </div>
               </div>
             </div>
@@ -149,7 +155,7 @@
                     Sua mensagem aparecerá aqui...
                   </div>
                   <div class="text-[10px] text-gray-500 text-right mt-1 flex items-center justify-end gap-1">
-                    <span>12:00</span>
+                    <span id="previa-hora">12:00</span>
                     <span class="text-[#53bdeb] font-bold">✓✓</span>
                   </div>
                 </div>
@@ -200,9 +206,9 @@
             <span>📅</span> Calendário Mensal
           </h2>
           <div class="flex items-center gap-3">
-            <button onclick="mudarMes(-1)" class="px-3 py-1 bg-gray-100 rounded text-sm font-bold">◀</button>
+            <button onclick="mudarMes(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm font-bold">◀</button>
             <span id="rotulo-mes-ano" class="font-bold text-base capitalize text-gray-800"></span>
-            <button onclick="mudarMes(1)" class="px-3 py-1 bg-gray-100 rounded text-sm font-bold">▶</button>
+            <button onclick="mudarMes(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm font-bold">▶</button>
           </div>
         </div>
 
@@ -236,6 +242,9 @@
           </div>
           <h3 class="text-xl font-bold text-emerald-800">WhatsApp Conectado!</h3>
           <p id="txt-numero-conectado" class="text-sm text-gray-600 mt-1">Seu WhatsApp está pronto para enviar mensagens automáticas.</p>
+          <button type="button" id="btn-desconectar" onclick="desconectarWhatsApp()" class="mt-5 text-xs bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-4 py-2 rounded-lg border border-red-200 transition">
+            🔌 Desconectar WhatsApp
+          </button>
         </div>
 
         <!-- Formulário para Gerar Código -->
@@ -287,9 +296,41 @@
   <script>
     let midiaBase64 = null;
     let todosAgendamentos = [];
-    let dataCalendario = new Date();
+    let dataCalendario = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let whatsappConectado = false;
+    let ultimoStatusConectado = null;
 
-    function trocarAba(nomeAba) {
+    function escapeHtml(valor) {
+      return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatarChaveDataLocal(date) {
+      const ano = date.getFullYear();
+      const mes = String(date.getMonth() + 1).padStart(2, '0');
+      const dia = String(date.getDate()).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function obterBadgeStatus(status, errorMessage) {
+      const titulo = errorMessage ? ` title="${escapeHtml(errorMessage)}"` : '';
+      if (status === 'sent') {
+        return `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700"${titulo}>Enviada</span>`;
+      }
+      if (status === 'failed') {
+        return `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700"${titulo}>Falhou</span>`;
+      }
+      if (status === 'processing') {
+        return `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700"${titulo}>Enviando...</span>`;
+      }
+      return `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700"${titulo}>Pendente</span>`;
+    }
+
+    async function trocarAba(nomeAba) {
       document.querySelectorAll('.aba-item').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('border-emerald-600', 'text-emerald-700');
@@ -304,38 +345,75 @@
         btnAlvo.classList.remove('border-transparent', 'text-gray-500');
       }
 
-      if (nomeAba === 'agendadas') carregarAgendamentos();
-      if (nomeAba === 'calendario') renderizarCalendario();
+      if (nomeAba === 'agendadas') {
+        await carregarAgendamentos();
+      }
+      if (nomeAba === 'calendario') {
+        await carregarAgendamentos();
+        renderizarCalendario();
+      }
     }
 
     // Prévia em Tempo Real
     const inputMsg = document.getElementById('input-mensagem');
     const previaTexto = document.getElementById('previa-texto');
-    inputMsg.addEventListener('input', () => {
+
+    function atualizarPreviaTexto() {
       const v = inputMsg.value.trim();
       previaTexto.textContent = v || 'Sua mensagem aparecerá aqui...';
       if (!v) previaTexto.classList.add('italic', 'text-gray-400');
       else previaTexto.classList.remove('italic', 'text-gray-400');
-    });
+    }
 
-    document.getElementById('input-telefone').addEventListener('input', (e) => {
-      document.getElementById('previa-nome').textContent = e.target.value.trim() || 'Destinatário';
-    });
+    function atualizarPreviaNome() {
+      const tipo = document.querySelector('input[name="tipo_destino"]:checked').value;
+      const previaNome = document.getElementById('previa-nome');
+      if (tipo === 'grupo') {
+        const sel = document.getElementById('select-grupo');
+        const opcao = sel.options[sel.selectedIndex];
+        previaNome.textContent = (sel.value && opcao) ? opcao.textContent : 'Grupo do WhatsApp';
+      } else {
+        previaNome.textContent = document.getElementById('input-telefone').value.trim() || 'Destinatário';
+      }
+    }
+
+    function atualizarPreviaHora() {
+      const primeiroHorario = document.querySelector('.input-horario');
+      const spanHora = document.getElementById('previa-hora');
+      if (primeiroHorario && primeiroHorario.value) {
+        const dt = new Date(primeiroHorario.value);
+        if (!Number.isNaN(dt.getTime())) {
+          spanHora.textContent = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          return;
+        }
+      }
+      spanHora.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    inputMsg.addEventListener('input', atualizarPreviaTexto);
+    document.getElementById('input-telefone').addEventListener('input', atualizarPreviaNome);
 
     function atualizarTipoDestino() {
       const tipo = document.querySelector('input[name="tipo_destino"]:checked').value;
       if (tipo === 'grupo') {
         document.getElementById('campo-individual').classList.add('hidden');
         document.getElementById('campo-grupo').classList.remove('hidden');
+        carregarGrupos();
       } else {
         document.getElementById('campo-individual').classList.remove('hidden');
         document.getElementById('campo-grupo').classList.add('hidden');
       }
+      atualizarPreviaNome();
     }
 
     function tratarArquivo(e) {
       const file = e.target.files[0];
       if (!file) return;
+      if (!file.type || !file.type.startsWith('image/')) {
+        alert('Por favor, selecione um arquivo de imagem válido.');
+        e.target.value = '';
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (evt) => {
         midiaBase64 = evt.target.result;
@@ -348,6 +426,7 @@
 
     function removerMidia() {
       document.getElementById('input-arquivo').value = '';
+      document.getElementById('previa-imagem').src = '';
       document.getElementById('previa-midia-box').classList.add('hidden');
       document.getElementById('btn-remover-midia').classList.add('hidden');
       midiaBase64 = null;
@@ -355,22 +434,73 @@
 
     function adicionarOutroHorario() {
       const div = document.createElement('div');
-      div.className = 'flex items-center gap-2 mt-2';
+      div.className = 'flex items-center gap-2 mt-2 horario-extra';
       div.innerHTML = `
         <input type="datetime-local" class="input-horario w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required>
-        <button type="button" onclick="this.parentElement.remove()" class="px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold">❌</button>
+        <button type="button" onclick="this.parentElement.remove()" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold">❌</button>
       `;
       document.getElementById('container-horarios').appendChild(div);
+    }
+
+    function resetarFormularioAgendamento() {
+      document.getElementById('form-agendamento').reset();
+      document.querySelectorAll('#container-horarios .horario-extra').forEach(el => el.remove());
+      removerMidia();
+      atualizarTipoDestino();
+      atualizarPreviaTexto();
+      atualizarPreviaNome();
+      atualizarPreviaHora();
     }
 
     async function salvarAgendamento(e) {
       e.preventDefault();
       const tipo = document.querySelector('input[name="tipo_destino"]:checked').value;
-      const destino = tipo === 'individual' ? document.getElementById('input-telefone').value.trim() : document.getElementById('select-grupo').value;
+      const selectGrupo = document.getElementById('select-grupo');
+      const destino = tipo === 'individual'
+        ? document.getElementById('input-telefone').value.trim()
+        : selectGrupo.value;
+      const targetLabel = tipo === 'grupo' && selectGrupo.selectedIndex >= 0
+        ? selectGrupo.options[selectGrupo.selectedIndex].textContent
+        : destino;
       const mensagem = inputMsg.value.trim();
 
-      const listaHorarios = [];
-      document.querySelectorAll('.input-horario').forEach(inp => { if (inp.value) listaHorarios.push(inp.value); });
+      if (tipo === 'individual') {
+        const digitos = destino.replace(/\D/g, '');
+        if (digitos.length < 10) {
+          alert('Informe um número válido com DDI e DDD (ex: 5511999998888).');
+          return;
+        }
+      } else if (!destino) {
+        alert('Selecione um grupo do WhatsApp antes de agendar.');
+        return;
+      }
+
+      if (!mensagem && !midiaBase64) {
+        alert('Digite uma mensagem ou anexe uma imagem.');
+        return;
+      }
+
+      const listaHorariosIso = [];
+      let horarioInvalido = false;
+      document.querySelectorAll('.input-horario').forEach(inp => {
+        if (!inp.value) return;
+        const dt = new Date(inp.value);
+        if (Number.isNaN(dt.getTime())) {
+          horarioInvalido = true;
+          return;
+        }
+        // Converte horário local do navegador para ISO UTC para evitar divergência de fuso na nuvem
+        listaHorariosIso.push(dt.toISOString());
+      });
+
+      if (horarioInvalido || listaHorariosIso.length === 0) {
+        alert('Informe ao menos um horário de envio válido.');
+        return;
+      }
+
+      const btnSalvar = document.getElementById('btn-salvar');
+      btnSalvar.disabled = true;
+      btnSalvar.innerHTML = '<span>⏳</span> Salvando agendamento...';
 
       try {
         const res = await fetch('/api/schedules', {
@@ -379,53 +509,214 @@
           body: JSON.stringify({
             target: destino,
             target_type: tipo,
+            target_label: targetLabel,
             message: mensagem,
             media_url: midiaBase64,
-            scheduled_at_list: listaHorarios
+            media_type: midiaBase64 ? 'image' : 'none',
+            scheduled_at_list: listaHorariosIso
           })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+        if (!res.ok) throw new Error(data.error || 'Erro ao agendar mensagem.');
 
         alert('✅ ' + data.message);
-        document.getElementById('form-agendamento').reset();
-        removerMidia();
-        trocarAba('agendadas');
+        resetarFormularioAgendamento();
+        await trocarAba('agendadas');
+      } catch (err) {
+        alert('❌ ' + err.message);
+      } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = '<span>🚀</span> Confirmar e Agendar';
+      }
+    }
+
+    async function carregarGrupos() {
+      const sel = document.getElementById('select-grupo');
+      const hint = document.getElementById('hint-grupos');
+      const valorAtual = sel.value;
+
+      try {
+        const res = await fetch('/api/groups');
+        if (!res.ok) throw new Error('Falha ao buscar grupos');
+        const grupos = await res.json();
+
+        if (!Array.isArray(grupos) || grupos.length === 0) {
+          sel.innerHTML = whatsappConectado
+            ? '<option value="">Nenhum grupo encontrado na sua conta</option>'
+            : '<option value="">Conecte o WhatsApp para carregar seus grupos</option>';
+          hint.textContent = whatsappConectado
+            ? 'Clique em 🔄 se acabou de entrar em um grupo.'
+            : 'Vá na aba "Conexão WhatsApp" para parear seu celular e listar os grupos reais.';
+          hint.classList.remove('hidden');
+          return;
+        }
+
+        hint.classList.add('hidden');
+        sel.innerHTML = '<option value="">Selecione um grupo...</option>' +
+          grupos.map(g => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.name)}</option>`).join('');
+
+        if (valorAtual && grupos.some(g => g.id === valorAtual)) {
+          sel.value = valorAtual;
+        }
+        atualizarPreviaNome();
+      } catch (e) {
+        sel.innerHTML = '<option value="">Erro ao carregar grupos</option>';
+      }
+    }
+
+    async function carregarAgendamentos() {
+      const tbody = document.getElementById('tabela-agendamentos');
+      try {
+        const res = await fetch('/api/schedules');
+        if (!res.ok) throw new Error('Erro ao carregar agendamentos');
+        const lista = await res.json();
+        todosAgendamentos = Array.isArray(lista) ? lista : [];
+        document.getElementById('badge-contador').textContent = todosAgendamentos.filter(x => x.status === 'pending').length;
+
+        if (todosAgendamentos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-400">Nenhum agendamento ativo.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = todosAgendamentos.map(item => {
+          const destinoExibicao = escapeHtml(item.target_label || item.target);
+          const msgExibicao = escapeHtml(item.message || '(Somente imagem)');
+          const midiaBadge = item.media_url
+            ? ' <span class="inline-block text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-semibold ml-1">🖼️ Imagem</span>'
+            : '';
+          const dataFormatada = new Date(item.scheduled_at).toLocaleString('pt-BR');
+          const idSeguro = Number(item.id);
+
+          return `
+            <tr class="hover:bg-gray-50">
+              <td class="p-3 font-medium text-gray-900">${destinoExibicao}</td>
+              <td class="p-3 max-w-xs truncate" title="${msgExibicao}">${msgExibicao}${midiaBadge}</td>
+              <td class="p-3 whitespace-nowrap text-gray-600">${escapeHtml(dataFormatada)}</td>
+              <td class="p-3">${obterBadgeStatus(item.status, item.error_message)}</td>
+              <td class="p-3 text-right">
+                <button onclick="cancelar(${idSeguro})" class="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded font-semibold">Excluir</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Erro ao carregar: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    async function cancelar(id) {
+      if (!confirm('Deseja excluir este agendamento?')) return;
+      try {
+        const res = await fetch('/api/schedules/' + encodeURIComponent(id), { method: 'DELETE' });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Não foi possível excluir.');
+        }
+        await carregarAgendamentos();
+        if (!document.getElementById('aba-calendario').classList.contains('hidden')) {
+          renderizarCalendario();
+        }
       } catch (err) {
         alert('❌ ' + err.message);
       }
     }
 
-    async function carregarAgendamentos() {
-      try {
-        const res = await fetch('/api/schedules');
-        const lista = await res.json();
-        todosAgendamentos = lista;
-        document.getElementById('badge-contador').textContent = lista.filter(x => x.status === 'pending').length;
-
-        const tbody = document.getElementById('tabela-agendamentos');
-        if (lista.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-400">Nenhum agendamento ativo.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = lista.map(item => `
-          <tr class="hover:bg-gray-50">
-            <td class="p-3 font-medium">${item.target}</td>
-            <td class="p-3 max-w-xs truncate">${item.message}</td>
-            <td class="p-3">${new Date(item.scheduled_at).toLocaleString('pt-BR')}</td>
-            <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-semibold ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>
-            <td class="p-3 text-right"><button onclick="cancelar(${item.id})" class="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded">Cancelar</button></td>
-          </tr>
-        `).join('');
-      } catch (e) {}
+    // Calendário Mensal Interativo
+    function mudarMes(delta) {
+      dataCalendario = new Date(dataCalendario.getFullYear(), dataCalendario.getMonth() + delta, 1);
+      document.getElementById('detalhes-dia').classList.add('hidden');
+      renderizarCalendario();
     }
 
-    async function cancelar(id) {
-      if (confirm('Cancelar agendamento?')) {
-        await fetch('/api/schedules/' + id, { method: 'DELETE' });
-        carregarAgendamentos();
+    function renderizarCalendario() {
+      const grade = document.getElementById('grade-calendario');
+      const rotulo = document.getElementById('rotulo-mes-ano');
+      grade.innerHTML = '';
+
+      const ano = dataCalendario.getFullYear();
+      const mes = dataCalendario.getMonth();
+      const hojeChave = formatarChaveDataLocal(new Date());
+
+      rotulo.textContent = dataCalendario.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+      const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+      const totalDias = new Date(ano, mes + 1, 0).getDate();
+
+      // Indexa agendamentos pela data LOCAL (evita deslocamento de dia por fuso UTC)
+      const porDia = {};
+      for (const ag of todosAgendamentos) {
+        if (!ag.scheduled_at) continue;
+        const dt = new Date(ag.scheduled_at);
+        if (Number.isNaN(dt.getTime())) continue;
+        const chave = formatarChaveDataLocal(dt);
+        if (!porDia[chave]) porDia[chave] = [];
+        porDia[chave].push(ag);
       }
+
+      for (let i = 0; i < primeiroDiaSemana; i++) {
+        const vazio = document.createElement('div');
+        vazio.className = 'h-20 bg-gray-50/50 rounded-lg border border-transparent';
+        grade.appendChild(vazio);
+      }
+
+      for (let dia = 1; dia <= totalDias; dia++) {
+        const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const mensagensDesteDia = porDia[dataStr] || [];
+        const ehHoje = dataStr === hojeChave;
+
+        const celula = document.createElement('div');
+        celula.className = `h-20 p-1.5 bg-white border rounded-lg hover:border-emerald-500 transition cursor-pointer flex flex-col justify-between ${ehHoje ? 'border-emerald-500 ring-1 ring-emerald-200' : 'border-gray-200'}`;
+
+        let badgesHtml = '';
+        if (mensagensDesteDia.length > 0) {
+          badgesHtml = `
+            <div class="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full text-center truncate">
+              ${mensagensDesteDia.length} msg(s)
+            </div>
+          `;
+        }
+
+        celula.innerHTML = `
+          <div class="text-right text-xs font-semibold ${ehHoje ? 'text-emerald-700 font-bold' : 'text-gray-700'}">${dia}</div>
+          ${badgesHtml}
+        `;
+
+        celula.onclick = () => mostrarDetalhesDia(dataStr, mensagensDesteDia);
+        grade.appendChild(celula);
+      }
+    }
+
+    function mostrarDetalhesDia(dataStr, mensagens) {
+      const box = document.getElementById('detalhes-dia');
+      const titulo = document.getElementById('titulo-detalhes-dia');
+      const lista = document.getElementById('lista-mensagens-dia');
+
+      box.classList.remove('hidden');
+      const [ano, mes, dia] = dataStr.split('-');
+      titulo.textContent = `Mensagens programadas para ${dia}/${mes}/${ano} (${mensagens.length})`;
+
+      if (mensagens.length === 0) {
+        lista.innerHTML = '<p class="text-xs text-gray-400">Nenhuma mensagem programada para este dia.</p>';
+        return;
+      }
+
+      lista.innerHTML = mensagens.map(m => {
+        const hora = new Date(m.scheduled_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const destino = escapeHtml(m.target_label || m.target);
+        const texto = escapeHtml(m.message || '(Somente imagem)');
+        return `
+          <div class="bg-gray-50 p-3 rounded-lg border text-xs flex justify-between items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-gray-800">${destino}</span>:
+              <span class="text-gray-600 break-words">${texto}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${obterBadgeStatus(m.status, m.error_message)}
+              <span class="text-gray-500 font-medium">${escapeHtml(hora)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     // Gerar Código de Pareamento
@@ -452,7 +743,11 @@
         if (!res.ok) throw new Error(data.error || 'Erro ao gerar código');
 
         if (data.code) {
-          document.getElementById('valor-codigo').textContent = data.code;
+          const formatado = data.code.length === 8
+            ? `${data.code.slice(0, 4)}-${data.code.slice(4)}`
+            : data.code;
+          document.getElementById('valor-codigo').textContent = formatado;
+          document.getElementById('valor-codigo').dataset.rawCode = data.code;
           document.getElementById('area-codigo').classList.remove('hidden');
         } else if (data.alreadyConnected) {
           alert('Seu WhatsApp já está conectado!');
@@ -466,10 +761,45 @@
       }
     }
 
-    function copiarCodigo() {
-      const cod = document.getElementById('valor-codigo').textContent.trim();
-      navigator.clipboard.writeText(cod);
-      alert('Código copiado: ' + cod);
+    async function desconectarWhatsApp() {
+      if (!confirm('Deseja desconectar esta conta do WhatsApp?')) return;
+      const btn = document.getElementById('btn-desconectar');
+      btn.disabled = true;
+      btn.textContent = '⏳ Desconectando...';
+
+      try {
+        const res = await fetch('/api/disconnect', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao desconectar');
+        document.getElementById('area-codigo').classList.add('hidden');
+        await verificarStatus();
+        await carregarGrupos();
+      } catch (err) {
+        alert('❌ ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔌 Desconectar WhatsApp';
+      }
+    }
+
+    async function copiarCodigo() {
+      const el = document.getElementById('valor-codigo');
+      const cod = el.dataset.rawCode || el.textContent.replace(/-/g, '').trim();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(cod);
+        } else {
+          const temp = document.createElement('textarea');
+          temp.value = cod;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          temp.remove();
+        }
+        alert('Código copiado: ' + cod);
+      } catch (_) {
+        alert('Selecione e copie o código manualmente: ' + cod);
+      }
     }
 
     // Verificador de Status Contínuo
@@ -477,13 +807,14 @@
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
+        whatsappConectado = Boolean(data.connected);
 
         const badgeTxt = document.getElementById('status-texto');
         const bolinha = document.getElementById('status-bolinha');
         const boxConectado = document.getElementById('box-conectado');
         const boxDesconectado = document.getElementById('box-desconectado');
 
-        if (data.connected) {
+        if (whatsappConectado) {
           badgeTxt.textContent = 'WhatsApp Conectado';
           bolinha.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
           boxConectado.classList.remove('hidden');
@@ -495,14 +826,21 @@
           boxConectado.classList.add('hidden');
           boxDesconectado.classList.remove('hidden');
         }
+
+        if (ultimoStatusConectado !== whatsappConectado) {
+          ultimoStatusConectado = whatsappConectado;
+          carregarGrupos();
+        }
       } catch (e) {}
     }
 
     // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
+      atualizarPreviaHora();
       verificarStatus();
       setInterval(verificarStatus, 4000);
       carregarAgendamentos();
+      carregarGrupos();
     });
   </script>
 </body>

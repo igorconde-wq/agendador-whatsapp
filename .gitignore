@@ -1,0 +1,9 @@
+node_modules/
+schedules.db
+schedules.db-journal
+schedules.db-wal
+schedules.db-shm
+auth_info_baileys/
+data/
+.env
+*.log
