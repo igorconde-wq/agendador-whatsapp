@@ -1,1 +1,15 @@
-{"name":"whatsapp-scheduler","version":"1.0.0","main":"server.js","scripts":{"start":"node server.js"},"dependencies":{"cors":"^2.8.5","express":"^4.19.2","node-cron":"^3.0.3","sqlite3":"^5.1.7"}}
+{
+  "name": "meu-whatsapp",
+  "version": "1.0.0",
+  "description": "Agendador de WhatsApp em Nuvem com Pareamento",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.12",
+    "express": "^4.19.2",
+    "pino": "^8.20.0",
+    "sqlite3": "^5.1.7"
+  }
+}
