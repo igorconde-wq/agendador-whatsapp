@@ -25,16 +25,16 @@
           <p class="text-xs text-emerald-100">Disparo automático 24/7 sem precisar do PC ligado</p>
         </div>
       </div>
-      <div id="status-badge" class="flex items-center gap-2 bg-emerald-800/80 px-3 py-1.5 rounded-full text-xs font-medium">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="status-texto">Sistema Ativo</span>
+      <div id="status-badge" class="flex items-center gap-2 bg-emerald-900/80 px-3 py-1.5 rounded-full text-xs font-medium">
+        <span id="status-bolinha" class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
+        <span id="status-texto">Verificando WhatsApp...</span>
       </div>
     </div>
   </header>
 
-  <!-- Barra de Abas de Navegação -->
+  <!-- Abas de Navegação -->
   <div class="bg-white border-b sticky top-0 z-10 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 flex gap-1 sm:gap-4 overflow-x-auto">
+    <div class="max-w-6xl mx-auto px-4 flex gap-2 sm:gap-4 overflow-x-auto">
       <button id="btn-novo" onclick="trocarAba('novo')" class="tab-btn px-4 py-3 border-b-2 font-medium text-sm flex items-center gap-2 border-emerald-600 text-emerald-700">
         <span>✍️</span> Novo Agendamento
       </button>
@@ -51,7 +51,7 @@
     </div>
   </div>
 
-  <!-- Conteúdo Principal -->
+  <!-- Conteúdo -->
   <main class="max-w-6xl mx-auto p-4 sm:p-6">
 
     <!-- ==================== ABA 1: NOVO AGENDAMENTO ==================== -->
@@ -65,49 +65,44 @@
           </h2>
 
           <form id="form-agendamento" onsubmit="salvarAgendamento(event)" class="space-y-4">
-            
-            <!-- Destinatário: Contato ou Grupo -->
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Destino da Mensagem:</label>
               <div class="flex gap-4 mb-2">
                 <label class="flex items-center gap-2 cursor-pointer text-sm">
-                  <input type="radio" name="tipo_destino" value="individual" checked onchange="atualizarTipoDestino()" class="text-emerald-600 focus:ring-emerald-500">
+                  <input type="radio" name="tipo_destino" value="individual" checked onchange="atualizarTipoDestino()" class="text-emerald-600">
                   <span>Contato Individual (Número)</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-sm">
-                  <input type="radio" name="tipo_destino" value="grupo" onchange="atualizarTipoDestino()" class="text-emerald-600 focus:ring-emerald-500">
+                  <input type="radio" name="tipo_destino" value="grupo" onchange="atualizarTipoDestino()" class="text-emerald-600">
                   <span>Grupo do WhatsApp</span>
                 </label>
               </div>
 
               <div id="campo-individual">
-                <input type="tel" id="input-telefone" placeholder="Ex: 5511999998888 (com DDI e DDD)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                <input type="tel" id="input-telefone" placeholder="Ex: 5511999998888 (com DDI e DDD)" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
               </div>
 
               <div id="campo-grupo" class="hidden">
-                <select id="select-grupo" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-                  <option value="">Carregando grupos do WhatsApp...</option>
+                <select id="select-grupo" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                  <option value="">Carregando grupos...</option>
                 </select>
               </div>
             </div>
 
-            <!-- Texto da Mensagem -->
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1">Mensagem:</label>
-              <textarea id="input-mensagem" rows="4" placeholder="Digite aqui o texto que será enviado..." required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"></textarea>
-              <p class="text-xs text-gray-400 mt-1">Dica: A prévia ao lado atualiza em tempo real enquanto você digita.</p>
+              <textarea id="input-mensagem" rows="4" placeholder="Digite aqui a sua mensagem..." required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
             </div>
 
-            <!-- Anexo de Foto/Vídeo/Áudio -->
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Anexar Mídia (Opcional):</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Anexar Imagem (Opcional):</label>
               <div class="flex items-center gap-2">
-                <input type="file" id="input-arquivo" accept="image/*,video/*,audio/*" onchange="tratarArquivo(event)" class="text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                <button type="button" id="btn-remover-midia" onclick="removerMidia()" class="hidden text-xs text-red-600 hover:text-red-800 font-semibold px-2 py-1 bg-red-50 rounded">Remover</button>
+                <input type="file" id="input-arquivo" accept="image/*" onchange="tratarArquivo(event)" class="text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
+                <button type="button" id="btn-remover-midia" onclick="removerMidia()" class="hidden text-xs text-red-600 font-semibold px-2 py-1 bg-red-50 rounded">Remover</button>
               </div>
             </div>
 
-            <!-- Horários de Envio (Múltiplos Horários em um único agendamento) -->
+            <!-- Horários de Envio -->
             <div class="border-t pt-4">
               <div class="flex justify-between items-center mb-2">
                 <label class="block text-sm font-semibold text-gray-700">Horário(s) de Envio:</label>
@@ -116,16 +111,13 @@
                 </button>
               </div>
 
-              <!-- Lista de Horários -->
               <div id="container-horarios" class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <input type="datetime-local" class="input-horario w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" required>
+                  <input type="datetime-local" class="input-horario w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required>
                 </div>
               </div>
-              <p class="text-xs text-gray-400 mt-1">Você pode adicionar quantas datas e horários desejar para esta mesma mensagem.</p>
             </div>
 
-            <!-- Botão de Salvar -->
             <button type="submit" id="btn-salvar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-sm transition flex items-center justify-center gap-2 text-base">
               <span>🚀</span> Confirmar e Agendar
             </button>
@@ -136,53 +128,31 @@
         <div class="lg:col-span-5">
           <div class="sticky top-20">
             <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <span>👁️</span> Prévia no WhatsApp (Como o contato verá)
+              <span>👁️</span> Prévia no WhatsApp
             </h3>
 
-            <!-- Mockup do Celular WhatsApp -->
             <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-300 max-w-sm mx-auto bg-white">
-              <!-- Topo do Chat WhatsApp -->
               <div class="bg-[#075e54] text-white px-4 py-3 flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">
-                  👤
-                </div>
+                <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">👤</div>
                 <div class="flex-1 min-w-0">
                   <div id="previa-nome" class="font-semibold text-sm truncate">Destinatário</div>
                   <div class="text-[11px] text-emerald-200">online</div>
                 </div>
-                <div class="text-xs flex gap-3 text-white/80">
-                  <span>📹</span>
-                  <span>📞</span>
-                  <span>⋮</span>
-                </div>
               </div>
 
-              <!-- Fundo do Chat WhatsApp com Balão -->
-              <div class="whatsapp-bg p-4 min-h-[340px] flex flex-col justify-end">
-                
-                <!-- Balão da Mensagem -->
+              <div class="whatsapp-bg p-4 min-h-[320px] flex flex-col justify-end">
                 <div class="bg-[#d9fdd3] self-end max-w-[85%] rounded-lg p-2.5 shadow-sm text-sm relative">
-                  
-                  <!-- Prévia de Mídia Anexada -->
-                  <div id="previa-midia-box" class="hidden mb-2 rounded overflow-hidden bg-black/10">
-                    <img id="previa-imagem" src="" alt="Anexo" class="max-h-48 w-full object-cover rounded hidden">
-                    <div id="previa-arquivo-nome" class="hidden p-2 text-xs font-medium text-gray-700 flex items-center gap-2">
-                      <span>📎</span> <span id="nome-arquivo-txt">arquivo</span>
-                    </div>
+                  <div id="previa-midia-box" class="hidden mb-2 rounded overflow-hidden">
+                    <img id="previa-imagem" src="" alt="Anexo" class="max-h-48 w-full object-cover rounded">
                   </div>
-
-                  <!-- Texto da Mensagem -->
                   <div id="previa-texto" class="text-gray-800 break-words whitespace-pre-wrap italic text-gray-400">
                     Sua mensagem aparecerá aqui...
                   </div>
-
-                  <!-- Hora e Check Azul -->
                   <div class="text-[10px] text-gray-500 text-right mt-1 flex items-center justify-end gap-1">
-                    <span id="previa-hora">12:00</span>
+                    <span>12:00</span>
                     <span class="text-[#53bdeb] font-bold">✓✓</span>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -191,15 +161,15 @@
       </div>
     </section>
 
-    <!-- ==================== ABA 2: MENSAGENS AGENDADAS ==================== -->
+    <!-- ==================== ABA 2: AGENDADAS ==================== -->
     <section id="aba-agendadas" class="aba-item hidden">
       <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
             <span>📋</span> Todas as Mensagens Agendadas
           </h2>
-          <button onclick="carregarAgendamentos()" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg text-gray-700 flex items-center gap-1">
-            <span>🔄</span> Atualizar
+          <button onclick="carregarAgendamentos()" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg text-gray-700">
+            🔄 Atualizar
           </button>
         </div>
 
@@ -209,37 +179,33 @@
               <tr>
                 <th class="p-3">Destino</th>
                 <th class="p-3">Mensagem</th>
-                <th class="p-3">Mídia</th>
                 <th class="p-3">Data e Hora</th>
                 <th class="p-3">Status</th>
                 <th class="p-3 text-right">Ação</th>
               </tr>
             </thead>
             <tbody id="tabela-agendamentos" class="divide-y divide-gray-100">
-              <tr>
-                <td colspan="6" class="p-4 text-center text-gray-400">Carregando agendamentos...</td>
-              </tr>
+              <tr><td colspan="5" class="p-4 text-center text-gray-400">Carregando...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ==================== ABA 3: CALENDÁRIO MENSAL ==================== -->
+    <!-- ==================== ABA 3: CALENDÁRIO ==================== -->
     <section id="aba-calendario" class="aba-item hidden">
       <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <span>📅</span> Calendário de Envios do Mês
+            <span>📅</span> Calendário Mensal
           </h2>
           <div class="flex items-center gap-3">
-            <button onclick="mudarMes(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm font-bold">◀</button>
+            <button onclick="mudarMes(-1)" class="px-3 py-1 bg-gray-100 rounded text-sm font-bold">◀</button>
             <span id="rotulo-mes-ano" class="font-bold text-base capitalize text-gray-800"></span>
-            <button onclick="mudarMes(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm font-bold">▶</button>
+            <button onclick="mudarMes(1)" class="px-3 py-1 bg-gray-100 rounded text-sm font-bold">▶</button>
           </div>
         </div>
 
-        <!-- Grade dos dias da semana -->
         <div class="grid grid-cols-7 gap-1 text-center font-semibold text-xs text-gray-500 mb-2">
           <div class="p-2 text-red-500">DOM</div>
           <div class="p-2">SEG</div>
@@ -250,10 +216,8 @@
           <div class="p-2">SÁB</div>
         </div>
 
-        <!-- Grade dos dias do mês -->
         <div id="grade-calendario" class="grid grid-cols-7 gap-1"></div>
 
-        <!-- Detalhes do dia selecionado -->
         <div id="detalhes-dia" class="mt-6 border-t pt-4 hidden">
           <h3 class="font-bold text-gray-800 text-sm mb-2" id="titulo-detalhes-dia">Mensagens deste dia</h3>
           <div id="lista-mensagens-dia" class="space-y-2"></div>
@@ -261,38 +225,70 @@
       </div>
     </section>
 
-    <!-- ==================== ABA 4: CONEXÃO WHATSAPP ==================== -->
+    <!-- ==================== ABA 4: CONEXÃO POR CÓDIGO (PAIRING CODE) ==================== -->
     <section id="aba-conexao" class="aba-item hidden">
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 max-w-xl mx-auto text-center">
-        <h2 class="text-lg font-bold text-gray-900 mb-2">Conectar seu WhatsApp</h2>
-        <p class="text-sm text-gray-500 mb-6">Escaneie o QR Code com o aplicativo WhatsApp no seu celular para autorizar os disparos.</p>
+      <div class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-200 max-w-xl mx-auto">
         
-        <div class="bg-gray-50 p-6 rounded-xl border border-dashed border-gray-300 inline-block mb-4">
-          <div id="qrcode-box" class="w-56 h-56 bg-white border flex items-center justify-center mx-auto text-gray-400 text-sm">
-            <span>Carregando QR Code...</span>
+        <!-- Status de Conexão -->
+        <div id="box-conectado" class="hidden text-center py-6">
+          <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+            ✅
+          </div>
+          <h3 class="text-xl font-bold text-emerald-800">WhatsApp Conectado!</h3>
+          <p id="txt-numero-conectado" class="text-sm text-gray-600 mt-1">Seu WhatsApp está pronto para enviar mensagens automáticas.</p>
+        </div>
+
+        <!-- Formulário para Gerar Código -->
+        <div id="box-desconectado">
+          <div class="text-center mb-6">
+            <span class="text-3xl">🔑</span>
+            <h2 class="text-xl font-bold text-gray-900 mt-2">Conectar por Código de 8 Dígitos</h2>
+            <p class="text-sm text-gray-500">Não precisa de câmera! Você recebe o código na tela e confirma no seu celular.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Seu Número com DDI e DDD:</label>
+              <input type="tel" id="input-telefone-conexao" placeholder="Ex: 5511999998888" class="w-full px-4 py-2.5 border rounded-lg text-base focus:ring-2 focus:ring-emerald-500 outline-none">
+              <p class="text-xs text-gray-400 mt-1">Coloque 55 + DDD + seu número (apenas números).</p>
+            </div>
+
+            <button type="button" id="btn-gerar-codigo" onclick="gerarCodigoPareamento()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-sm transition flex items-center justify-center gap-2">
+              <span>📲</span> Gerar Código de Pareamento
+            </button>
+          </div>
+
+          <!-- Mostrador do Código Gerado -->
+          <div id="area-codigo" class="hidden mt-6 p-6 bg-emerald-50 border-2 border-emerald-300 rounded-2xl text-center">
+            <p class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">Seu Código de Pareamento:</p>
+            <div id="valor-codigo" class="text-3xl sm:text-4xl font-extrabold text-emerald-900 tracking-widest my-2 select-all">
+              ----
+            </div>
+            <button onclick="copiarCodigo()" class="mt-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-full shadow-sm">
+              📋 Copiar Código
+            </button>
+
+            <!-- Passo a Passo -->
+            <div class="mt-6 text-left text-xs text-gray-700 space-y-2 bg-white p-4 rounded-xl border border-emerald-200">
+              <p class="font-bold text-gray-900">Como confirmar no seu WhatsApp:</p>
+              <p>1. Abra o WhatsApp no seu celular.</p>
+              <p>2. Toque em <strong>Aparelhos Conectados</strong> ➔ <strong>Conectar um aparelho</strong>.</p>
+              <p>3. Toque embaixo em <strong>"Conectar com número de telefone"</strong>.</p>
+              <p>4. Digite o código de 8 dígitos exibido acima.</p>
+            </div>
           </div>
         </div>
 
-        <div class="text-xs text-gray-500 space-y-1">
-          <p>1. Abra o WhatsApp no celular</p>
-          <p>2. Toque em <strong>Aparelhos Conectados</strong> ➔ <strong>Conectar um aparelho</strong></p>
-          <p>3. Aponte a câmera para o QR Code acima</p>
-        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- ==================== SCRIPTS PUROS E TESTADOS ==================== -->
   <script>
-    // Estado Global da Aplicação
     let midiaBase64 = null;
-    let midiaTipo = 'none';
-    let midiaNome = '';
     let todosAgendamentos = [];
     let dataCalendario = new Date();
 
-    // 1. Alternador de Abas
     function trocarAba(nomeAba) {
       document.querySelectorAll('.aba-item').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -302,7 +298,6 @@
 
       const abaAlvo = document.getElementById('aba-' + nomeAba);
       const btnAlvo = document.getElementById('btn-' + nomeAba);
-
       if (abaAlvo) abaAlvo.classList.remove('hidden');
       if (btnAlvo) {
         btnAlvo.classList.add('border-emerald-600', 'text-emerald-700');
@@ -313,331 +308,200 @@
       if (nomeAba === 'calendario') renderizarCalendario();
     }
 
-    // 2. Atualização da Prévia em Tempo Real
+    // Prévia em Tempo Real
     const inputMsg = document.getElementById('input-mensagem');
     const previaTexto = document.getElementById('previa-texto');
-
-    inputMsg.addEventListener('input', function() {
-      const valor = inputMsg.value.trim();
-      if (valor) {
-        previaTexto.textContent = valor;
-        previaTexto.classList.remove('italic', 'text-gray-400');
-      } else {
-        previaTexto.textContent = 'Sua mensagem aparecerá aqui...';
-        previaTexto.classList.add('italic', 'text-gray-400');
-      }
+    inputMsg.addEventListener('input', () => {
+      const v = inputMsg.value.trim();
+      previaTexto.textContent = v || 'Sua mensagem aparecerá aqui...';
+      if (!v) previaTexto.classList.add('italic', 'text-gray-400');
+      else previaTexto.classList.remove('italic', 'text-gray-400');
     });
 
-    // 3. Atualizar Nome do Destinatário na Prévia
-    document.getElementById('input-telefone').addEventListener('input', function(e) {
+    document.getElementById('input-telefone').addEventListener('input', (e) => {
       document.getElementById('previa-nome').textContent = e.target.value.trim() || 'Destinatário';
     });
 
     function atualizarTipoDestino() {
       const tipo = document.querySelector('input[name="tipo_destino"]:checked').value;
-      const campoIndiv = document.getElementById('campo-individual');
-      const campoGrupo = document.getElementById('campo-grupo');
       if (tipo === 'grupo') {
-        campoIndiv.classList.add('hidden');
-        campoGrupo.classList.remove('hidden');
-        const sel = document.getElementById('select-grupo');
-        document.getElementById('previa-nome').textContent = sel.options[sel.selectedIndex]?.text || 'Grupo WhatsApp';
+        document.getElementById('campo-individual').classList.add('hidden');
+        document.getElementById('campo-grupo').classList.remove('hidden');
       } else {
-        campoIndiv.classList.remove('hidden');
-        campoGrupo.classList.add('hidden');
-        document.getElementById('previa-nome').textContent = document.getElementById('input-telefone').value.trim() || 'Destinatário';
+        document.getElementById('campo-individual').classList.remove('hidden');
+        document.getElementById('campo-grupo').classList.add('hidden');
       }
     }
 
-    // 4. Tratamento de Arquivo / Foto na Prévia
     function tratarArquivo(e) {
       const file = e.target.files[0];
       if (!file) return;
-
-      midiaNome = file.name;
       const reader = new FileReader();
-
-      reader.onload = function(evt) {
+      reader.onload = (evt) => {
         midiaBase64 = evt.target.result;
-        const box = document.getElementById('previa-midia-box');
-        const img = document.getElementById('previa-imagem');
-        const txtBox = document.getElementById('previa-arquivo-nome');
-        const btnRemover = document.getElementById('btn-remover-midia');
-
-        box.classList.remove('hidden');
-        btnRemover.classList.remove('hidden');
-
-        if (file.type.startsWith('image/')) {
-          midiaTipo = 'image';
-          img.src = midiaBase64;
-          img.classList.remove('hidden');
-          txtBox.classList.add('hidden');
-        } else {
-          midiaTipo = file.type.startsWith('audio/') ? 'audio' : 'video';
-          img.classList.add('hidden');
-          txtBox.classList.remove('hidden');
-          document.getElementById('nome-arquivo-txt').textContent = file.name;
-        }
+        document.getElementById('previa-imagem').src = midiaBase64;
+        document.getElementById('previa-midia-box').classList.remove('hidden');
+        document.getElementById('btn-remover-midia').classList.remove('hidden');
       };
-
       reader.readAsDataURL(file);
     }
 
     function removerMidia() {
       document.getElementById('input-arquivo').value = '';
       document.getElementById('previa-midia-box').classList.add('hidden');
-      document.getElementById('previa-imagem').classList.add('hidden');
-      document.getElementById('previa-arquivo-nome').classList.add('hidden');
       document.getElementById('btn-remover-midia').classList.add('hidden');
       midiaBase64 = null;
-      midiaTipo = 'none';
-      midiaNome = '';
     }
 
-    // 5. Múltiplos Horários de Envio
     function adicionarOutroHorario() {
-      const container = document.getElementById('container-horarios');
       const div = document.createElement('div');
       div.className = 'flex items-center gap-2 mt-2';
       div.innerHTML = `
-        <input type="datetime-local" class="input-horario w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" required>
-        <button type="button" onclick="this.parentElement.remove()" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold" title="Remover este horário">❌</button>
+        <input type="datetime-local" class="input-horario w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required>
+        <button type="button" onclick="this.parentElement.remove()" class="px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold">❌</button>
       `;
-      container.appendChild(div);
+      document.getElementById('container-horarios').appendChild(div);
     }
 
-    // 6. Salvar Agendamento
     async function salvarAgendamento(e) {
       e.preventDefault();
-      const btn = document.getElementById('btn-salvar');
-      btn.disabled = true;
-      btn.innerHTML = '<span>⏳</span> Gravando agendamento...';
+      const tipo = document.querySelector('input[name="tipo_destino"]:checked').value;
+      const destino = tipo === 'individual' ? document.getElementById('input-telefone').value.trim() : document.getElementById('select-grupo').value;
+      const mensagem = inputMsg.value.trim();
+
+      const listaHorarios = [];
+      document.querySelectorAll('.input-horario').forEach(inp => { if (inp.value) listaHorarios.push(inp.value); });
 
       try {
-        const tipoDestino = document.querySelector('input[name="tipo_destino"]:checked').value;
-        let destino = '';
-
-        if (tipoDestino === 'individual') {
-          destino = document.getElementById('input-telefone').value.trim();
-          if (!destino) throw new Error('Digite o número de telefone.');
-        } else {
-          destino = document.getElementById('select-grupo').value;
-          if (!destino) throw new Error('Selecione um grupo do WhatsApp.');
-        }
-
-        const mensagem = inputMsg.value.trim();
-        if (!mensagem) throw new Error('Digite a mensagem a ser enviada.');
-
-        // Coleta todos os horários adicionados
-        const inputsHorarios = document.querySelectorAll('.input-horario');
-        const listaHorarios = [];
-        inputsHorarios.forEach(inp => {
-          if (inp.value) listaHorarios.push(inp.value);
-        });
-
-        if (listaHorarios.length === 0) throw new Error('Escolha ao menos uma data e horário.');
-
-        const payload = {
-          target: destino,
-          target_type: tipoDestino,
-          message: mensagem,
-          media_url: midiaBase64,
-          media_type: midiaTipo,
-          scheduled_at_list: listaHorarios
-        };
-
         const res = await fetch('/api/schedules', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            target: destino,
+            target_type: tipo,
+            message: mensagem,
+            media_url: midiaBase64,
+            scheduled_at_list: listaHorarios
+          })
         });
-
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erro ao agendar mensagem.');
+        if (!res.ok) throw new Error(data.error);
 
-        alert('✅ Sucesso: ' + (data.message || 'Mensagem agendada com sucesso!'));
-        
-        // Limpar formulário
+        alert('✅ ' + data.message);
         document.getElementById('form-agendamento').reset();
         removerMidia();
-        previaTexto.textContent = 'Sua mensagem aparecerá aqui...';
-        previaTexto.classList.add('italic', 'text-gray-400');
-        
-        // Redefinir lista de horários para apenas 1 campo
-        document.getElementById('container-horarios').innerHTML = `
-          <div class="flex items-center gap-2">
-            <input type="datetime-local" class="input-horario w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" required>
-          </div>
-        `;
-
         trocarAba('agendadas');
       } catch (err) {
         alert('❌ ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<span>🚀</span> Confirmar e Agendar';
       }
     }
 
-    // 7. Carregar Lista de Agendamentos
     async function carregarAgendamentos() {
-      const tbody = document.getElementById('tabela-agendamentos');
-      tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-400">Buscando mensagens...</td></tr>';
-
       try {
         const res = await fetch('/api/schedules');
         const lista = await res.json();
         todosAgendamentos = lista;
-
         document.getElementById('badge-contador').textContent = lista.filter(x => x.status === 'pending').length;
 
-        if (!lista || lista.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-400">Nenhuma mensagem agendada no momento.</td></tr>';
+        const tbody = document.getElementById('tabela-agendamentos');
+        if (lista.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-400">Nenhum agendamento ativo.</td></tr>';
           return;
         }
 
-        tbody.innerHTML = lista.map(item => {
-          const dataFormatada = new Date(item.scheduled_at).toLocaleString('pt-BR');
-          const statusBadge = item.status === 'sent' 
-            ? '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Enviada</span>'
-            : item.status === 'failed'
-            ? '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Falhou</span>'
-            : '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Pendente</span>';
+        tbody.innerHTML = lista.map(item => `
+          <tr class="hover:bg-gray-50">
+            <td class="p-3 font-medium">${item.target}</td>
+            <td class="p-3 max-w-xs truncate">${item.message}</td>
+            <td class="p-3">${new Date(item.scheduled_at).toLocaleString('pt-BR')}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-semibold ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>
+            <td class="p-3 text-right"><button onclick="cancelar(${item.id})" class="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded">Cancelar</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {}
+    }
 
-          const midiaTag = item.media_url 
-            ? '<span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded">Com Anexo</span>'
-            : '<span class="text-xs text-gray-400">Sem anexo</span>';
-
-          return `
-            <tr class="hover:bg-gray-50 transition">
-              <td class="p-3 font-medium text-gray-900">${item.target}</td>
-              <td class="p-3 max-w-xs truncate" title="${item.message}">${item.message}</td>
-              <td class="p-3">${midiaTag}</td>
-              <td class="p-3 text-gray-600">${dataFormatada}</td>
-              <td class="p-3">${statusBadge}</td>
-              <td class="p-3 text-right">
-                <button onclick="cancelarAgendamento(${item.id})" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2.5 py-1.5 rounded transition">
-                  Cancelar
-                </button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Erro ao carregar: ${err.message}</td></tr>`;
+    async function cancelar(id) {
+      if (confirm('Cancelar agendamento?')) {
+        await fetch('/api/schedules/' + id, { method: 'DELETE' });
+        carregarAgendamentos();
       }
     }
 
-    // 8. Cancelar Agendamento
-    async function cancelarAgendamento(id) {
-      if (!confirm('Deseja realmente cancelar este agendamento?')) return;
-      try {
-        const res = await fetch('/api/schedules/' + id, { method: 'DELETE' });
-        if (res.ok) {
-          carregarAgendamentos();
-        } else {
-          alert('Não foi possível cancelar.');
-        }
-      } catch (err) {
-        alert('Erro: ' + err.message);
-      }
-    }
+    // Gerar Código de Pareamento
+    async function gerarCodigoPareamento() {
+      const telefone = document.getElementById('input-telefone-conexao').value.trim();
+      const btn = document.getElementById('btn-gerar-codigo');
 
-    // 9. Calendário Mensal Interativo
-    function mudarMes(delta) {
-      dataCalendario.setMonth(dataCalendario.getMonth() + delta);
-      renderizarCalendario();
-    }
-
-    function renderizarCalendario() {
-      const grade = document.getElementById('grade-calendario');
-      const rotulo = document.getElementById('rotulo-mes-ano');
-      grade.innerHTML = '';
-
-      const ano = dataCalendario.getFullYear();
-      const mes = dataCalendario.getMonth();
-
-      const nomeMes = dataCalendario.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-      rotulo.textContent = nomeMes;
-
-      const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
-      const totalDias = new Date(ano, mes + 1, 0).getDate();
-
-      // Espaços vazios antes do dia 1
-      for (let i = 0; i < primeiroDiaSemana; i++) {
-        const vazio = document.createElement('div');
-        vazio.className = 'h-20 bg-gray-50/50 rounded-lg border border-transparent';
-        grade.appendChild(vazio);
-      }
-
-      // Preenchimento dos dias
-      for (let dia = 1; dia <= totalDias; dia++) {
-        const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-        const mensagensDesteDia = todosAgendamentos.filter(a => a.scheduled_at && a.scheduled_at.startsWith(dataStr));
-
-        const celula = document.createElement('div');
-        celula.className = 'h-20 p-1.5 bg-white border border-gray-200 rounded-lg hover:border-emerald-500 transition cursor-pointer flex flex-col justify-between';
-        
-        let badgesHtml = '';
-        if (mensagensDesteDia.length > 0) {
-          badgesHtml = `
-            <div class="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full text-center truncate">
-              ${mensagensDesteDia.length} msg(s)
-            </div>
-          `;
-        }
-
-        celula.innerHTML = `
-          <div class="text-right text-xs font-semibold text-gray-700">${dia}</div>
-          ${badgesHtml}
-        `;
-
-        celula.onclick = () => mostrarDetalhesDia(dataStr, mensagensDesteDia);
-        grade.appendChild(celula);
-      }
-    }
-
-    function mostrarDetalhesDia(dataStr, mensagens) {
-      const box = document.getElementById('detalhes-dia');
-      const titulo = document.getElementById('titulo-detalhes-dia');
-      const lista = document.getElementById('lista-mensagens-dia');
-
-      box.classList.remove('hidden');
-      const [ano, mes, dia] = dataStr.split('-');
-      titulo.textContent = `Mensagens programadas para ${dia}/${mes}/${ano} (${mensagens.length})`;
-
-      if (mensagens.length === 0) {
-        lista.innerHTML = '<p class="text-xs text-gray-400">Nenhuma mensagem programada para este dia.</p>';
+      if (!telefone) {
+        alert('Por favor, digite seu número com DDI e DDD (ex: 5511999998888).');
         return;
       }
 
-      lista.innerHTML = mensagens.map(m => `
-        <div class="bg-gray-50 p-3 rounded-lg border text-xs flex justify-between items-center">
-          <div>
-            <span class="font-bold text-gray-800">${m.target}</span>: 
-            <span class="text-gray-600">${m.message}</span>
-          </div>
-          <span class="text-gray-500 font-medium">${new Date(m.scheduled_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-      `).join('');
-    }
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Solicitando código ao WhatsApp...';
 
-    // 10. Carregar Grupos do WhatsApp
-    async function carregarGrupos() {
       try {
-        const res = await fetch('/api/groups');
-        const grupos = await res.json();
-        const sel = document.getElementById('select-grupo');
-        sel.innerHTML = '<option value="">Selecione um grupo...</option>' + 
-          grupos.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-      } catch (e) {
-        console.error('Erro ao listar grupos:', e);
+        const res = await fetch('/api/connect/pairing-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: telefone })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Erro ao gerar código');
+
+        if (data.code) {
+          document.getElementById('valor-codigo').textContent = data.code;
+          document.getElementById('area-codigo').classList.remove('hidden');
+        } else if (data.alreadyConnected) {
+          alert('Seu WhatsApp já está conectado!');
+          verificarStatus();
+        }
+      } catch (err) {
+        alert('❌ ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>📲</span> Gerar Código de Pareamento';
       }
     }
 
-    // Inicialização ao carregar a página
+    function copiarCodigo() {
+      const cod = document.getElementById('valor-codigo').textContent.trim();
+      navigator.clipboard.writeText(cod);
+      alert('Código copiado: ' + cod);
+    }
+
+    // Verificador de Status Contínuo
+    async function verificarStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        const badgeTxt = document.getElementById('status-texto');
+        const bolinha = document.getElementById('status-bolinha');
+        const boxConectado = document.getElementById('box-conectado');
+        const boxDesconectado = document.getElementById('box-desconectado');
+
+        if (data.connected) {
+          badgeTxt.textContent = 'WhatsApp Conectado';
+          bolinha.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+          boxConectado.classList.remove('hidden');
+          boxDesconectado.classList.add('hidden');
+          document.getElementById('txt-numero-conectado').textContent = 'Conectado como: ' + (data.phone || 'WhatsApp Ativo');
+        } else {
+          badgeTxt.textContent = 'WhatsApp Desconectado';
+          bolinha.className = 'w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse';
+          boxConectado.classList.add('hidden');
+          boxDesconectado.classList.remove('hidden');
+        }
+      } catch (e) {}
+    }
+
+    // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
-      carregarGrupos();
+      verificarStatus();
+      setInterval(verificarStatus, 4000);
       carregarAgendamentos();
     });
   </script>
