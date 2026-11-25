@@ -173,10 +173,10 @@ const PAGE_HTML = `<!DOCTYPE html>
   </header>
 
   <nav>
-    <button onclick="mudarAba('novo')" id="btn-novo" class="active"><i class="fa-solid fa-plus-circle"></i> Novo Agendamento</button>
-    <button onclick="mudarAba('agendadas')" id="btn-agendadas"><i class="fa-solid fa-clock"></i> Mensagens Agendadas</button>
-    <button onclick="mudarAba('calendario')" id="btn-calendario"><i class="fa-solid fa-calendar-days"></i> Calendário Mensal</button>
-    <button onclick="mudarAba('conexao')" id="btn-conexao"><i class="fa-solid fa-qrcode"></i> Conectar WhatsApp</button>
+    <button type="button" onclick="mudarAba('novo')" id="btn-novo" class="active"><i class="fa-solid fa-plus-circle"></i> Novo Agendamento</button>
+    <button type="button" onclick="mudarAba('agendadas')" id="btn-agendadas"><i class="fa-solid fa-clock"></i> Mensagens Agendadas</button>
+    <button type="button" onclick="mudarAba('calendario')" id="btn-calendario"><i class="fa-solid fa-calendar-days"></i> Calendário Mensal</button>
+    <button type="button" onclick="mudarAba('conexao')" id="btn-conexao"><i class="fa-solid fa-qrcode"></i> Conectar WhatsApp</button>
   </nav>
 
   <main>
@@ -209,11 +209,11 @@ const PAGE_HTML = `<!DOCTYPE html>
               </div>
 
               <div id="campoContato">
-                <input type="text" id="dest" required placeholder="Número com DDD (ex: 5511999998888)">
+                <input type="text" id="dest" required placeholder="Número com DDD (ex: 5511999998888)" oninput="atualizarPrevia()" onkeyup="atualizarPrevia()">
               </div>
 
               <div id="campoGrupo" style="display: none;">
-                <select id="selectGrupo">
+                <select id="selectGrupo" onchange="atualizarPrevia()">
                   <option value="">Carregando seus grupos...</option>
                 </select>
                 <small style="color: #667781; display: block; margin-top: 4px;">* Grupos identificados automaticamente pelo nome</small>
@@ -222,7 +222,7 @@ const PAGE_HTML = `<!DOCTYPE html>
 
             <div class="form-group">
               <label>Nome para Identificação (Opcional)</label>
-              <input type="text" id="nome" placeholder="Ex: Cliente João ou Família">
+              <input type="text" id="nome" placeholder="Ex: Cliente João ou Família" oninput="atualizarPrevia()" onkeyup="atualizarPrevia()">
             </div>
 
             <div class="form-group">
@@ -238,15 +238,14 @@ const PAGE_HTML = `<!DOCTYPE html>
             <div class="form-group">
               <label>Texto da Mensagem</label>
               <div class="toolbar-msg">
-                <button type="button" class="tool-btn" onclick="inserirFormat('*', '*')"><b>B</b> Negrito</button>
-                <button type="button" class="tool-btn" onclick="inserirFormat('_', '_')"><i>I</i> Itálico</button>
-                <button type="button" class="tool-btn" onclick="inserirFormat('~', '~')"><s>S</s> Tachado</button>
                 <button type="button" class="tool-btn" onclick="inserirEmoji('😀')">😀</button>
                 <button type="button" class="tool-btn" onclick="inserirEmoji('❤️')">❤️</button>
                 <button type="button" class="tool-btn" onclick="inserirEmoji('🚀')">🚀</button>
                 <button type="button" class="tool-btn" onclick="inserirEmoji('📢')">📢</button>
+                <button type="button" class="tool-btn" onclick="inserirEmoji('📅')">📅</button>
+                <button type="button" class="tool-btn" onclick="inserirEmoji('👍')">👍</button>
               </div>
-              <textarea id="msg" rows="4" placeholder="Digite sua mensagem aqui..."></textarea>
+              <textarea id="msg" rows="4" placeholder="Digite sua mensagem aqui..." oninput="atualizarPrevia()" onkeyup="atualizarPrevia()"></textarea>
             </div>
 
             <div class="form-group">
@@ -323,7 +322,7 @@ const PAGE_HTML = `<!DOCTYPE html>
           2. Selecione <b>Aparelhos conectados</b> ➔ <b>Conectar um aparelho</b>.<br>
           3. Aponte a câmera para o QR Code acima.
         </p>
-        <button onclick="gerarNovoQR()" class="tool-btn" style="padding: 10px 20px; font-weight: bold; font-size: 13px; border-radius: 6px;">
+        <button type="button" onclick="gerarNovoQR()" class="tool-btn" style="padding: 10px 20px; font-weight: bold; font-size: 13px; border-radius: 6px;">
           <i class="fa-solid fa-rotate-right"></i> Gerar Novo QR Code
         </button>
       </div>
@@ -338,15 +337,17 @@ const PAGE_HTML = `<!DOCTYPE html>
     var mediaName = null;
 
     function mudarAba(nome) {
-      document.getElementById('tab-novo').style.display = (nome === 'novo' ? 'block' : 'none');
-      document.getElementById('tab-agendadas').style.display = (nome === 'agendadas' ? 'block' : 'none');
-      document.getElementById('tab-calendario').style.display = (nome === 'calendario' ? 'block' : 'none');
-      document.getElementById('tab-conexao').style.display = (nome === 'conexao' ? 'block' : 'none');
-
-      ['novo', 'agendadas', 'calendario', 'conexao'].forEach(function(x) {
-        var btn = document.getElementById('btn-' + x);
-        if (btn) btn.className = (x === nome ? 'active' : '');
-      });
+      var abas = ['novo', 'agendadas', 'calendario', 'conexao'];
+      for (var i = 0; i < abas.length; i++) {
+        var a = document.getElementById('tab-' + abas[i]);
+        if (a) a.style.display = 'none';
+        var b = document.getElementById('btn-' + abas[i]);
+        if (b) b.className = '';
+      }
+      var ativa = document.getElementById('tab-' + nome);
+      if (ativa) ativa.style.display = 'block';
+      var btnAtivo = document.getElementById('btn-' + nome);
+      if (btnAtivo) btnAtivo.className = 'active';
 
       if (nome === 'agendadas') carregar();
       if (nome === 'calendario') renderizarGradeCalendario();
@@ -359,8 +360,8 @@ const PAGE_HTML = `<!DOCTYPE html>
     }
 
     function processarArquivo(input) {
+      if (!input.files || !input.files[0]) return;
       var file = input.files[0];
-      if (!file) return;
       mediaName = file.name;
       document.getElementById('fileLabel').innerText = 'Anexo: ' + file.name;
       document.getElementById('btnRemoverMidia').style.display = 'inline-block';
@@ -368,22 +369,26 @@ const PAGE_HTML = `<!DOCTYPE html>
       var reader = new FileReader();
       reader.onload = function(e) {
         mediaData = e.target.result;
-        document.getElementById('previewImg').style.display = 'none';
-        document.getElementById('previewVideo').style.display = 'none';
-        document.getElementById('previewAudio').style.display = 'none';
+        var img = document.getElementById('previewImg');
+        var vid = document.getElementById('previewVideo');
+        var aud = document.getElementById('previewAudio');
 
-        if (file.type.startsWith('image/')) {
+        img.style.display = 'none';
+        vid.style.display = 'none';
+        aud.style.display = 'none';
+
+        if (file.type.indexOf('image') !== -1) {
           mediaType = 'image';
-          document.getElementById('previewImg').src = mediaData;
-          document.getElementById('previewImg').style.display = 'block';
-        } else if (file.type.startsWith('video/')) {
+          img.src = mediaData;
+          img.style.display = 'block';
+        } else if (file.type.indexOf('video') !== -1) {
           mediaType = 'video';
-          document.getElementById('previewVideo').src = mediaData;
-          document.getElementById('previewVideo').style.display = 'block';
-        } else if (file.type.startsWith('audio/')) {
+          vid.src = mediaData;
+          vid.style.display = 'block';
+        } else if (file.type.indexOf('audio') !== -1) {
           mediaType = 'audio';
-          document.getElementById('previewAudio').src = mediaData;
-          document.getElementById('previewAudio').style.display = 'block';
+          aud.src = mediaData;
+          aud.style.display = 'block';
         }
         atualizarPrevia();
       };
@@ -401,115 +406,82 @@ const PAGE_HTML = `<!DOCTYPE html>
       atualizarPrevia();
     }
 
-    function inserirFormat(antes, depois) {
-      var txt = document.getElementById('msg');
-      var start = txt.selectionStart;
-      var end = txt.selectionEnd;
-      var sel = txt.value.substring(start, end) || 'texto';
-      txt.value = txt.value.substring(0, start) + antes + sel + depois + txt.value.substring(end);
-      atualizarPrevia();
-    }
-
     function inserirEmoji(emoji) {
       var txt = document.getElementById('msg');
       txt.value += emoji;
       atualizarPrevia();
     }
 
-    // Atualização em tempo real conforme você digita!
     function atualizarPrevia() {
-      try {
-        var msgInput = document.getElementById('msg');
-        var msg = msgInput ? msgInput.value : '';
-        var prevTexto = document.getElementById('previewTexto');
+      var msgBox = document.getElementById('msg');
+      var txt = document.getElementById('previewTexto');
+      if (msgBox && txt) {
+        txt.innerText = msgBox.value ? msgBox.value : 'Sua mensagem vai aparecer aqui...';
+      }
 
-        if (prevTexto) {
-          if (msg && msg.trim() !== '') {
-            var formatado = msg
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/\\*(.*?)\\*/g, '<b>$1</b>')
-              .replace(/_(.*?)_/g, '<i>$1</i>')
-              .replace(/~(.*?)~/g, '<del>$1</del>')
-              .replace(/\\n/g, '<br>');
-            prevTexto.innerHTML = formatado;
-          } else {
-            prevTexto.innerText = (mediaData ? '' : 'Sua mensagem vai aparecer aqui...');
-          }
-        }
+      var nome = document.getElementById('nome').value;
+      var dest = document.getElementById('dest').value;
+      var previewNome = document.getElementById('previewDestNome');
+      if (previewNome) {
+        previewNome.innerText = nome ? nome : (dest ? dest : 'Destinatário');
+      }
 
-        var nomeInput = document.getElementById('nome');
-        var destInput = document.getElementById('dest');
-        var nome = (nomeInput && nomeInput.value) ? nomeInput.value : '';
-        var dest = (destInput && destInput.value) ? destInput.value : '';
-
-        var radioGrupo = document.querySelector('input[name="tipo"][value="group"]');
-        var isGrupo = radioGrupo && radioGrupo.checked;
-
-        if (isGrupo) {
-          var select = document.getElementById('selectGrupo');
-          if (select && select.selectedIndex >= 0 && select.options[select.selectedIndex]) {
-            dest = select.options[select.selectedIndex].text;
-          } else {
-            dest = 'Grupo Selecionado';
-          }
-        }
-
-        var headerNome = document.getElementById('previewDestNome');
-        if (headerNome) {
-          headerNome.innerText = nome || dest || 'Destinatário';
-        }
-
-        var agora = new Date();
-        var horaEl = document.getElementById('previewHora');
-        if (horaEl) {
-          horaEl.innerText = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
-        }
-      } catch (e) {
-        console.error(e);
+      var agora = new Date();
+      var h = (agora.getHours() < 10 ? '0' : '') + agora.getHours();
+      var m = (agora.getMinutes() < 10 ? '0' : '') + agora.getMinutes();
+      var previewHora = document.getElementById('previewHora');
+      if (previewHora) {
+        previewHora.innerText = h + ':' + m;
       }
     }
 
     function carregarGrupos() {
-      fetch('/api/groups').then(r => r.json()).then(res => {
+      fetch('/api/groups').then(function(r){ return r.json(); }).then(function(res) {
         grupos = res;
         var select = document.getElementById('selectGrupo');
-        select.innerHTML = '<option value="">Selecione um grupo da lista...</option>' +
-          grupos.map(g => '<option value="' + (g.id || g.jid) + '">' + (g.subject || g.name) + '</option>').join('');
-        document.getElementById('statGrupos').innerText = grupos.length;
+        if (select) {
+          select.innerHTML = '<option value="">Selecione um grupo da lista...</option>' +
+            grupos.map(function(g){ return '<option value="' + (g.id || g.jid) + '">' + (g.subject || g.name) + '</option>'; }).join('');
+        }
+        var statG = document.getElementById('statGrupos');
+        if (statG) statG.innerText = grupos.length;
       });
     }
 
     function carregar() {
-      fetch('/api/schedules').then(r => r.json()).then(res => {
+      fetch('/api/schedules').then(function(r){ return r.json(); }).then(function(res) {
         dados = res;
-        var pend = dados.filter(x => x.status === 'pending');
-        var enviadas = dados.filter(x => x.status === 'sent');
+        var pend = dados.filter(function(x){ return x.status === 'pending'; });
+        var enviadas = dados.filter(function(x){ return x.status === 'sent'; });
 
-        document.getElementById('statPendentes').innerText = pend.length;
-        document.getElementById('statEnviadas').innerText = enviadas.length;
+        var statP = document.getElementById('statPendentes');
+        if (statP) statP.innerText = pend.length;
+        var statE = document.getElementById('statEnviadas');
+        if (statE) statE.innerText = enviadas.length;
 
         var l = document.getElementById('listaAgendadas');
-        if (pend.length === 0) {
-          l.innerHTML = '<p style="color: #667781;">Nenhuma mensagem agendada no momento.</p>';
-        } else {
-          l.innerHTML = pend.map(item => {
-            var target = item.recipient_name || item.recipient;
-            var t = item.recipient_type === 'group' ? 'Grupo' : 'Contato';
-            var d = new Date(item.scheduled_at).toLocaleString('pt-BR');
-            var mediaTag = item.media_type ? ' <span style="font-size:11px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">📎 ' + item.media_type.toUpperCase() + '</span>' : '';
-            return '<div class="item-card">' +
-              '<div><strong>' + target + ' (' + t + ')' + mediaTag + '</strong><p>' + (item.message || '(Apenas mídia)') + '</p><small>Previsto: ' + d + '</small></div>' +
-              '<button onclick="cancelar(' + item.id + ')" class="btn-cancel">Cancelar</button>' +
-            '</div>';
-          }).join('');
+        if (l) {
+          if (pend.length === 0) {
+            l.innerHTML = '<p style="color: #667781;">Nenhuma mensagem agendada no momento.</p>';
+          } else {
+            l.innerHTML = pend.map(function(item) {
+              var target = item.recipient_name || item.recipient;
+              var t = item.recipient_type === 'group' ? 'Grupo' : 'Contato';
+              var d = new Date(item.scheduled_at).toLocaleString('pt-BR');
+              var mediaTag = item.media_type ? ' <span style="font-size:11px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">📎 ' + item.media_type.toUpperCase() + '</span>' : '';
+              return '<div class="item-card">' +
+                '<div><strong>' + target + ' (' + t + ')' + mediaTag + '</strong><p>' + (item.message || '(Apenas mídia)') + '</p><small>Previsto: ' + d + '</small></div>' +
+                '<button onclick="cancelar(' + item.id + ')" class="btn-cancel">Cancelar</button>' +
+              '</div>';
+            }).join('');
+          }
         }
       });
     }
 
     function renderizarGradeCalendario() {
       var container = document.getElementById('calDias');
+      if (!container) return;
       var agora = new Date();
       var ano = agora.getFullYear();
       var mes = agora.getMonth();
@@ -526,17 +498,17 @@ const PAGE_HTML = `<!DOCTYPE html>
       }
 
       for (var dia = 1; dia <= totalDias; dia++) {
-        var dataIso = ano + '-' + String(mes + 1).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
-        var eventosDia = dados.filter(x => x.scheduled_at && x.scheduled_at.startsWith(dataIso));
+        var dataIso = ano + '-' + (mes + 1 < 10 ? '0' : '') + (mes + 1) + '-' + (dia < 10 ? '0' : '') + dia;
+        var eventosDia = dados.filter(function(x){ return x.scheduled_at && x.scheduled_at.indexOf(dataIso) === 0; });
 
-        var badges = eventosDia.map(e => '<span class="cal-badge">' + (e.recipient_name || 'Msg') + '</span>').join('');
+        var badges = eventosDia.map(function(e){ return '<span class="cal-badge">' + (e.recipient_name || 'Msg') + '</span>'; }).join('');
         html += '<div class="cal-cell" onclick="verDia(\'' + dataIso + '\', ' + dia + ')"><b>' + dia + '</b>' + badges + '</div>';
       }
       container.innerHTML = html;
     }
 
     function verDia(dataIso, dia) {
-      var eventos = dados.filter(x => x.scheduled_at && x.scheduled_at.startsWith(dataIso));
+      var eventos = dados.filter(function(x){ return x.scheduled_at && x.scheduled_at.indexOf(dataIso) === 0; });
       var div = document.getElementById('calDetalheDia');
       div.style.display = 'block';
       document.getElementById('calTituloDetalhe').innerText = 'Agendamentos para o dia ' + dia + ' (' + eventos.length + ')';
@@ -545,13 +517,15 @@ const PAGE_HTML = `<!DOCTYPE html>
       if (eventos.length === 0) {
         lista.innerHTML = '<p style="color: #64748b; font-size: 13px;">Nenhuma mensagem agendada para este dia.</p>';
       } else {
-        lista.innerHTML = eventos.map(e => '<div class="item-card"><div><strong>' + (e.recipient_name || e.recipient) + '</strong><p>' + e.message + '</p><small>Horário: ' + new Date(e.scheduled_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + '</small></div></div>').join('');
+        lista.innerHTML = eventos.map(function(e){
+          return '<div class="item-card"><div><strong>' + (e.recipient_name || e.recipient) + '</strong><p>' + e.message + '</p><small>Horário: ' + new Date(e.scheduled_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + '</small></div></div>';
+        }).join('');
       }
     }
 
     function gerarNovoQR() {
       var img = document.getElementById('qrCodeImg');
-      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=WHATSAPP_' + Date.now();
+      if (img) img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=WHATSAPP_' + Date.now();
     }
 
     function salvar(e) {
@@ -578,7 +552,7 @@ const PAGE_HTML = `<!DOCTYPE html>
           media_name: mediaName,
           scheduled_at: document.getElementById('data').value
         })
-      }).then(r => {
+      }).then(function(r) {
         if (r.ok) {
           alert('Agendado com sucesso!');
           document.querySelector('form').reset();
@@ -592,30 +566,13 @@ const PAGE_HTML = `<!DOCTYPE html>
 
     function cancelar(id) {
       if (confirm('Deseja cancelar este agendamento?')) {
-        fetch('/api/schedules/' + id, { method: 'DELETE' }).then(() => carregar());
+        fetch('/api/schedules/' + id, { method: 'DELETE' }).then(function(){ carregar(); });
       }
     }
 
-    // Conecta ouvintes diretos de digitação em tempo real!
-    window.addEventListener('DOMContentLoaded', function() {
-      var msgBox = document.getElementById('msg');
-      if (msgBox) {
-        msgBox.addEventListener('input', atualizarPrevia);
-        msgBox.addEventListener('keyup', atualizarPrevia);
-      }
-      var destBox = document.getElementById('dest');
-      if (destBox) destBox.addEventListener('input', atualizarPrevia);
-
-      var nomeBox = document.getElementById('nome');
-      if (nomeBox) nomeBox.addEventListener('input', atualizarPrevia);
-
-      var selectGrp = document.getElementById('selectGrupo');
-      if (selectGrp) selectGrp.addEventListener('change', atualizarPrevia);
-
-      carregarGrupos();
-      carregar();
-      atualizarPrevia();
-    });
+    carregarGrupos();
+    carregar();
+    atualizarPrevia();
   </script>
 </body>
 </html>`;
