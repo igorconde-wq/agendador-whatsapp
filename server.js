@@ -1,24 +1,22 @@
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const pino = require('pino');
+
+// Importação segura do Baileys (Motor WhatsApp)
+const Baileys = require('@whiskeysockets/baileys');
+const makeWASocket = Baileys.default || Baileys;
+const { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = Baileys;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Limite elevado para suportar imagens e mídias em Base64
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// Servir os arquivos estáticos da pasta public (onde está o index.html)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Inicializar banco SQLite persistente
-const db = new sqlite3.Database(path.join(__dirname, 'schedules.db'), (err) => {
-  if (err) console.error('Erro ao conectar ao SQLite:', err.message);
-  else console.log('Banco de dados SQLite pronto.');
-});
-
-// Criar tabela se não existir
+// Banco SQLite
+const db = new sqlite3.Database(path.join(__dirname, 'schedules.db'));
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS schedules (
@@ -35,26 +33,111 @@ db.serialize(() => {
   `);
 });
 
-// Rotas da API
-// 1. Status do serviço
+// Estado da Conexão WhatsApp
+let sock = null;
+let isConnected = false;
+let userPhone = null;
+
+async function iniciarWhatsApp() {
+  try {
+    const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, 'auth_info_baileys'));
+    const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1015901307] }));
+
+    sock = makeWASocket({
+      version,
+      auth: state,
+      logger: pino({ level: 'silent' }),
+      printQRInTerminal: false,
+      browser: ['Ubuntu', 'Chrome', '20.0.04']
+    });
+
+    sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('connection.update', (update) => {
+      const { connection, lastDisconnect } = update;
+      if (connection === 'open') {
+        isConnected = true;
+        userPhone = sock.user?.id ? sock.user.id.split(':')[0] : 'Conectado';
+        console.log(`[WHATSAPP] ✅ Conectado com sucesso como: ${userPhone}`);
+      } else if (connection === 'close') {
+        isConnected = false;
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        const deveReconectar = statusCode !== DisconnectReason.loggedOut;
+        console.log(`[WHATSAPP] Conexão encerrada. Tentando reconectar? ${deveReconectar}`);
+        if (deveReconectar) {
+          setTimeout(iniciarWhatsApp, 5000);
+        }
+      }
+    });
+  } catch (err) {
+    console.error('[WHATSAPP] Erro de inicialização:', err);
+    setTimeout(iniciarWhatsApp, 10000);
+  }
+}
+
+// Inicia o motor WhatsApp junto com o servidor
+iniciarWhatsApp();
+
+// API 1: Status da conexão
 app.get('/api/status', (req, res) => {
   res.json({
-    connected: true,
-    status: 'online',
-    timestamp: new Date().toISOString()
+    connected: isConnected,
+    phone: userPhone
   });
 });
 
-// 2. Lista de grupos do WhatsApp
-app.get('/api/groups', (req, res) => {
+// API 2: Solicitar Código de 8 Dígitos (Pairing Code)
+app.post('/api/connect/pairing-code', async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Número de telefone é obrigatório.' });
+
+    const numeroLimpo = phone.replace(/\D/g, '');
+    if (numeroLimpo.length < 10) {
+      return res.status(400).json({ error: 'Número inválido. Use formato com DDI e DDD (ex: 5511999998888).' });
+    }
+
+    if (isConnected) {
+      return res.json({ success: true, alreadyConnected: true, message: 'WhatsApp já está conectado!' });
+    }
+
+    if (!sock) {
+      return res.status(500).json({ error: 'Serviço WhatsApp iniciando... Aguarde 10 segundos e tente novamente.' });
+    }
+
+    // Solicita o código oficial de pareamento do WhatsApp
+    const codigo = await sock.requestPairingCode(numeroLimpo);
+    console.log(`[WHATSAPP] Código de pareamento gerado para ${numeroLimpo}: ${codigo}`);
+
+    res.json({ success: true, code: codigo });
+  } catch (err) {
+    console.error('Erro ao gerar código de pareamento:', err);
+    res.status(500).json({ error: 'Não foi possível gerar o código. Detalhe: ' + err.message });
+  }
+});
+
+// API 3: Listar Grupos do WhatsApp
+app.get('/api/groups', async (req, res) => {
+  try {
+    if (isConnected && sock) {
+      const gruposObj = await sock.groupFetchAllParticipating();
+      const grupos = Object.values(gruposObj).map(g => ({
+        id: g.id,
+        name: g.subject
+      }));
+      return res.json(grupos);
+    }
+  } catch (err) {
+    console.error('Erro ao buscar grupos reais:', err.message);
+  }
+  // Se ainda não conectou, retorna lista padrão informativa
   res.json([
-    { id: '120363028392193821@g.us', name: '📢 Avisos e Comunicados' },
-    { id: '120363028392193822@g.us', name: '👥 Grupo Clientes VIP' },
-    { id: '120363028392193823@g.us', name: '💼 Equipe e Suporte' }
+    { id: '120363028392193821@g.us', name: '📢 Avisos e Comunicados (Exemplo)' },
+    { id: '120363028392193822@g.us', name: '👥 Clientes VIP (Exemplo)' }
   ]);
 });
 
-// 3. Listar agendamentos
+// API 4: Listar Agendamentos
 app.get('/api/schedules', (req, res) => {
   db.all('SELECT * FROM schedules ORDER BY scheduled_at ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -62,13 +145,9 @@ app.get('/api/schedules', (req, res) => {
   });
 });
 
-// 4. Salvar agendamento (suporta múltiplos horários para a mesma mensagem)
+// API 5: Criar Agendamento (suporta múltiplos horários)
 app.post('/api/schedules', (req, res) => {
   const { target, target_type, message, media_url, media_type, scheduled_at, scheduled_at_list } = req.body;
-
-  if (!target || !message) {
-    return res.status(400).json({ error: 'Destinatário e mensagem são obrigatórios.' });
-  }
 
   let horarios = [];
   if (Array.isArray(scheduled_at_list) && scheduled_at_list.length > 0) {
@@ -77,8 +156,8 @@ app.post('/api/schedules', (req, res) => {
     horarios = [scheduled_at];
   }
 
-  if (horarios.length === 0) {
-    return res.status(400).json({ error: 'Informe ao menos um horário para envio.' });
+  if (!target || !message || horarios.length === 0) {
+    return res.status(400).json({ error: 'Destino, mensagem e ao menos um horário são obrigatórios.' });
   }
 
   const sql = `
@@ -86,61 +165,67 @@ app.post('/api/schedules', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, 'pending')
   `;
 
-  let concluidos = 0;
-  let erro = null;
-
+  let inseridos = 0;
   db.serialize(() => {
-    horarios.forEach((horario) => {
-      db.run(sql, [target, target_type || 'individual', message, media_url || null, media_type || 'none', horario], function(err) {
-        if (err) erro = err;
-        else concluidos++;
-      });
+    horarios.forEach(h => {
+      db.run(sql, [target, target_type || 'individual', message, media_url || null, media_type || 'none', h], () => inseridos++);
     });
   });
 
   setTimeout(() => {
-    if (erro && concluidos === 0) {
-      return res.status(500).json({ error: erro.message });
-    }
-    res.json({
-      success: true,
-      count: concluidos,
-      message: `${concluidos} agendamento(s) salvo(s) com sucesso!`
-    });
-  }, 120);
+    res.json({ success: true, count: inseridos, message: `${inseridos} envio(s) agendado(s)!` });
+  }, 100);
 });
 
-// 5. Excluir / Cancelar agendamento
+// API 6: Cancelar Agendamento
 app.delete('/api/schedules/:id', (req, res) => {
   db.run('DELETE FROM schedules WHERE id = ?', [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true, removed: this.changes });
+    res.json({ success: true });
   });
 });
 
-// Loop automático de envio (executa a cada 15 segundos em segundo plano)
+// Cron de Disparo a cada 15 segundos
 setInterval(() => {
   const agora = new Date().toISOString();
-  db.all(
-    `SELECT * FROM schedules WHERE status = 'pending' AND scheduled_at <= ?`,
-    [agora],
-    (err, rows) => {
-      if (err || !rows || rows.length === 0) return;
+  db.all(`SELECT * FROM schedules WHERE status = 'pending' AND scheduled_at <= ?`, [agora], async (err, rows) => {
+    if (err || !rows || rows.length === 0) return;
 
-      rows.forEach((agendamento) => {
-        console.log(`[DISPARO] Enviando agendamento #${agendamento.id} para ${agendamento.target}...`);
-        // Marca como enviado
-        db.run(`UPDATE schedules SET status = 'sent' WHERE id = ?`, [agendamento.id]);
-      });
+    for (const item of rows) {
+      if (!isConnected || !sock) {
+        console.log(`[DISPARO] Aguardando WhatsApp conectar para enviar ID #${item.id}...`);
+        continue;
+      }
+
+      try {
+        let jid = item.target;
+        if (item.target_type === 'individual') {
+          const num = item.target.replace(/\D/g, '');
+          jid = num + '@s.whatsapp.net';
+        }
+
+        if (item.media_url && item.media_url.startsWith('data:image')) {
+          const buffer = Buffer.from(item.media_url.split(',')[1], 'base64');
+          await sock.sendMessage(jid, { image: buffer, caption: item.message });
+        } else {
+          await sock.sendMessage(jid, { text: item.message });
+        }
+
+        db.run(`UPDATE schedules SET status = 'sent' WHERE id = ?`, [item.id]);
+        console.log(`[DISPARO] ✅ Mensagem #${item.id} enviada com sucesso para ${item.target}!`);
+      } catch (sendErr) {
+        console.error(`[DISPARO] ❌ Falha ao enviar #${item.id}:`, sendErr.message);
+        db.run(`UPDATE schedules SET status = 'failed' WHERE id = ?`, [item.id]);
+      }
     }
-  );
+  });
 }, 15000);
 
-// Qualquer outra rota entrega o index.html
+// Servir frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor WhatsApp iniciado com sucesso na porta ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
