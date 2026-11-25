@@ -1,13 +1,14 @@
 {
   "name": "meu-whatsapp",
   "version": "1.0.0",
-  "description": "Agendador de WhatsApp em Nuvem com Pareamento",
+  "description": "Agendador de WhatsApp em Nuvem",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.12",
+    "@whiskeysockets/baileys": "6.7.12",
+    "@hapi/boom": "^10.0.1",
     "express": "^4.19.2",
     "pino": "^8.20.0",
     "sqlite3": "^5.1.7"
