@@ -146,8 +146,7 @@ const PAGE_HTML = `<!DOCTYPE html>
     .phone-avatar { width: 36px; height: 36px; border-radius: 50%; background: #dfe5e7; display: flex; align-items: center; justify-content: center; color: #54656f; }
     .phone-chat { padding: 20px 16px; background-image: radial-gradient(#d1d7db 1px, transparent 1px); background-size: 16px 16px; min-height: 280px; display: flex; flex-direction: column; justify-content: flex-end; }
     .wa-bubble { background: #d9fdd3; border-radius: 8px; border-top-right-radius: 0; padding: 8px 12px; max-width: 90%; align-self: flex-end; box-shadow: 0 1px 1px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; }
-    .wa-bubble-media { max-width: 100%; border-radius: 6px; margin-bottom: 6px; display: block; }
-    .wa-bubble-audio { width: 100%; margin-bottom: 6px; }
+    .wa-bubble-media { max-width: 100%; border-radius: 6px; margin-bottom: 6px; display: none; }
     .wa-bubble-text { font-size: 14px; color: #111b21; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
     .wa-bubble-meta { font-size: 11px; color: #667781; text-align: right; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
 
@@ -158,7 +157,6 @@ const PAGE_HTML = `<!DOCTYPE html>
     .cal-cell { background: #f8f9fa; border: 1px solid #e9edef; border-radius: 8px; min-height: 70px; padding: 6px; font-size: 13px; cursor: pointer; transition: 0.2s; position: relative; }
     .cal-cell:hover { background: #e7f7f2; border-color: #00a884; }
     .cal-badge { background: #00a884; color: white; border-radius: 10px; font-size: 10px; padding: 2px 5px; margin-top: 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
     .item-card { background: #f8f9fa; border: 1px solid #e9edef; border-radius: 8px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .btn-cancel { background-color: #ea4335; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
   </style>
@@ -173,10 +171,10 @@ const PAGE_HTML = `<!DOCTYPE html>
   </header>
 
   <nav>
-    <button type="button" onclick="mudarAba('novo')" id="btn-novo" class="active"><i class="fa-solid fa-plus-circle"></i> Novo Agendamento</button>
-    <button type="button" onclick="mudarAba('agendadas')" id="btn-agendadas"><i class="fa-solid fa-clock"></i> Mensagens Agendadas</button>
-    <button type="button" onclick="mudarAba('calendario')" id="btn-calendario"><i class="fa-solid fa-calendar-days"></i> Calendário Mensal</button>
-    <button type="button" onclick="mudarAba('conexao')" id="btn-conexao"><i class="fa-solid fa-qrcode"></i> Conectar WhatsApp</button>
+    <button type="button" class="nav-btn active" onclick="mudarAba('novo')" id="btn-novo"><i class="fa-solid fa-plus-circle"></i> Novo Agendamento</button>
+    <button type="button" class="nav-btn" onclick="mudarAba('agendadas')" id="btn-agendadas"><i class="fa-solid fa-clock"></i> Mensagens Agendadas</button>
+    <button type="button" class="nav-btn" onclick="mudarAba('calendario')" id="btn-calendario"><i class="fa-solid fa-calendar-days"></i> Calendário Mensal</button>
+    <button type="button" class="nav-btn" onclick="mudarAba('conexao')" id="btn-conexao"><i class="fa-solid fa-qrcode"></i> Conectar WhatsApp</button>
   </nav>
 
   <main>
@@ -196,7 +194,7 @@ const PAGE_HTML = `<!DOCTYPE html>
     </div>
 
     <!-- Aba 1: Novo Agendamento -->
-    <div id="tab-novo" style="display: block;">
+    <div id="aba-novo" class="aba-conteudo" style="display: block;">
       <div class="layout-grid">
         <div class="card">
           <h2><i class="fa-solid fa-paper-plane"></i> Agendar Mensagem</h2>
@@ -204,16 +202,16 @@ const PAGE_HTML = `<!DOCTYPE html>
             <div class="form-group">
               <label>Destino da Mensagem</label>
               <div class="radio-group">
-                <label><input type="radio" name="tipo" value="contact" checked onchange="trocarTipo(false)"> Contato Individual</label>
-                <label><input type="radio" name="tipo" value="group" onchange="trocarTipo(true)"> Grupo do WhatsApp</label>
+                <label><input type="radio" name="tipo" value="contact" checked onchange="alternarTipoDestino('contact')"> Contato Individual</label>
+                <label><input type="radio" name="tipo" value="group" onchange="alternarTipoDestino('group')"> Grupo do WhatsApp</label>
               </div>
 
               <div id="campoContato">
-                <input type="text" id="dest" required placeholder="Número com DDD (ex: 5511999998888)" oninput="atualizarPrevia()" onkeyup="atualizarPrevia()">
+                <input type="text" id="dest" required placeholder="Número com DDD (ex: 5511999998888)" oninput="atualizarNome()" onkeyup="atualizarNome()">
               </div>
 
               <div id="campoGrupo" style="display: none;">
-                <select id="selectGrupo" onchange="atualizarPrevia()">
+                <select id="selectGrupo" onchange="aoMudarGrupo()">
                   <option value="">Carregando seus grupos...</option>
                 </select>
                 <small style="color: #667781; display: block; margin-top: 4px;">* Grupos identificados automaticamente pelo nome</small>
@@ -222,7 +220,7 @@ const PAGE_HTML = `<!DOCTYPE html>
 
             <div class="form-group">
               <label>Nome para Identificação (Opcional)</label>
-              <input type="text" id="nome" placeholder="Ex: Cliente João ou Família" oninput="atualizarPrevia()" onkeyup="atualizarPrevia()">
+              <input type="text" id="nome" placeholder="Ex: Cliente João ou Família" oninput="atualizarNome()" onkeyup="atualizarNome()">
             </div>
 
             <div class="form-group">
@@ -231,7 +229,7 @@ const PAGE_HTML = `<!DOCTYPE html>
                 <i class="fa-solid fa-cloud-arrow-up" style="font-size: 24px; color: #64748b;"></i>
                 <p id="fileLabel" style="font-size: 13px; color: #54656f; margin-top: 4px;">Clique para escolher Foto, Áudio ou Vídeo</p>
               </div>
-              <input type="file" id="fileInput" accept="image/*,audio/*,video/*" style="display: none;" onchange="processarArquivo(this)">
+              <input type="file" id="fileInput" accept="image/*,video/*,audio/*" style="display: none;" onchange="aoSelecionarArquivo(this)">
               <button type="button" id="btnRemoverMidia" style="display: none; margin-top: 6px; background: none; border: none; color: #ea4335; font-size: 12px; cursor: pointer;" onclick="removerMidia()"><i class="fa-solid fa-trash"></i> Remover anexo</button>
             </div>
 
@@ -245,7 +243,7 @@ const PAGE_HTML = `<!DOCTYPE html>
                 <button type="button" class="tool-btn" onclick="inserirEmoji('📅')">📅</button>
                 <button type="button" class="tool-btn" onclick="inserirEmoji('👍')">👍</button>
               </div>
-              <textarea id="msg" rows="4" placeholder="Digite sua mensagem aqui..." oninput="atualizarPrevia()" onkeyup="atualizarPrevia()"></textarea>
+              <textarea id="msg" rows="4" placeholder="Digite sua mensagem aqui..." oninput="atualizarTexto()" onkeyup="atualizarTexto()"></textarea>
             </div>
 
             <div class="form-group">
@@ -271,9 +269,9 @@ const PAGE_HTML = `<!DOCTYPE html>
             </div>
             <div class="phone-chat">
               <div class="wa-bubble">
-                <img id="previewImg" class="wa-bubble-media" style="display: none;" src="" alt="Imagem">
-                <video id="previewVideo" class="wa-bubble-media" style="display: none;" controls src=""></video>
-                <audio id="previewAudio" class="wa-bubble-audio" style="display: none;" controls src=""></audio>
+                <img id="previewImg" class="wa-bubble-media" src="" alt="Foto">
+                <video id="previewVideo" class="wa-bubble-media" controls src=""></video>
+                <audio id="previewAudio" class="wa-bubble-media" controls src=""></audio>
                 <p id="previewTexto" class="wa-bubble-text">Sua mensagem vai aparecer aqui...</p>
                 <div class="wa-bubble-meta">
                   <span id="previewHora">12:00</span>
@@ -287,44 +285,50 @@ const PAGE_HTML = `<!DOCTYPE html>
     </div>
 
     <!-- Aba 2: Mensagens Agendadas -->
-    <div id="tab-agendadas" class="card" style="display: none;">
-      <h2><i class="fa-solid fa-clock"></i> Mensagens Agendadas</h2>
-      <div id="listaAgendadas">Carregando agendamentos...</div>
+    <div id="aba-agendadas" class="aba-conteudo" style="display: none;">
+      <div class="card">
+        <h2><i class="fa-solid fa-clock"></i> Mensagens Agendadas</h2>
+        <div id="listaAgendadas">Carregando agendamentos...</div>
+      </div>
     </div>
 
     <!-- Aba 3: Calendário Mensal -->
-    <div id="tab-calendario" class="card" style="display: none;">
-      <div class="cal-header">
-        <h2 style="margin: 0;"><i class="fa-solid fa-calendar-days"></i> Calendário Mensal</h2>
-        <h3 id="calMesAno" style="font-size: 16px; color: #008069;">Novembro 2026</h3>
-      </div>
-      <div class="cal-grid">
-        <div class="cal-day-name">Dom</div><div class="cal-day-name">Seg</div><div class="cal-day-name">Ter</div>
-        <div class="cal-day-name">Qua</div><div class="cal-day-name">Qui</div><div class="cal-day-name">Sex</div><div class="cal-day-name">Sáb</div>
-      </div>
-      <div id="calDias" class="cal-grid" style="margin-top: 6px;"></div>
-      <div id="calDetalheDia" style="margin-top: 20px; display: none;">
-        <h3 id="calTituloDetalhe" style="font-size: 15px; color: #008069; margin-bottom: 10px;"></h3>
-        <div id="calListaDetalhes"></div>
+    <div id="aba-calendario" class="aba-conteudo" style="display: none;">
+      <div class="card">
+        <div class="cal-header">
+          <h2 style="margin: 0;"><i class="fa-solid fa-calendar-days"></i> Calendário Mensal</h2>
+          <h3 id="calMesAno" style="font-size: 16px; color: #008069;">Novembro 2026</h3>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-name">Dom</div><div class="cal-day-name">Seg</div><div class="cal-day-name">Ter</div>
+          <div class="cal-day-name">Qua</div><div class="cal-day-name">Qui</div><div class="cal-day-name">Sex</div><div class="cal-day-name">Sáb</div>
+        </div>
+        <div id="calDias" class="cal-grid" style="margin-top: 6px;"></div>
+        <div id="calDetalheDia" style="margin-top: 20px; display: none;">
+          <h3 id="calTituloDetalhe" style="font-size: 15px; color: #008069; margin-bottom: 10px;"></h3>
+          <div id="calListaDetalhes"></div>
+        </div>
       </div>
     </div>
 
     <!-- Aba 4: Conectar WhatsApp -->
-    <div id="tab-conexao" class="card" style="display: none;">
-      <h2><i class="fa-solid fa-qrcode"></i> Conectar seu WhatsApp na Nuvem</h2>
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 0;">
-        <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 20px;">
-          <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=WHATSAPP_CONNECT_SESSION" style="width: 240px; height: 240px; display: block;" alt="QR Code WhatsApp">
+    <div id="aba-conexao" class="aba-conteudo" style="display: none;">
+      <div class="card">
+        <h2><i class="fa-solid fa-qrcode"></i> Conectar seu WhatsApp na Nuvem</h2>
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 0;">
+          <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 20px;">
+            <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=WHATSAPP_CONNECT_SESSION" style="width: 240px; height: 240px; display: block;" alt="QR Code WhatsApp">
+          </div>
+          <p style="font-size: 15px; font-weight: bold; color: #111b21; margin-bottom: 6px;">Escaneie este QR Code com o WhatsApp do seu celular</p>
+          <p style="font-size: 13px; color: #64748b; max-width: 480px; line-height: 1.5; margin-bottom: 20px;">
+            1. Abra o WhatsApp no celular ➔ Toque nos <b>3 pontinhos</b> (ou Ajustes).<br>
+            2. Selecione <b>Aparelhos conectados</b> ➔ <b>Conectar um aparelho</b>.<br>
+            3. Aponte a câmera para o QR Code acima.
+          </p>
+          <button type="button" onclick="gerarNovoQR()" class="tool-btn" style="padding: 10px 20px; font-weight: bold; font-size: 13px; border-radius: 6px;">
+            <i class="fa-solid fa-rotate-right"></i> Gerar Novo QR Code
+          </button>
         </div>
-        <p style="font-size: 15px; font-weight: bold; color: #111b21; margin-bottom: 6px;">Escaneie este QR Code com o WhatsApp do seu celular</p>
-        <p style="font-size: 13px; color: #64748b; max-width: 480px; line-height: 1.5; margin-bottom: 20px;">
-          1. Abra o WhatsApp no celular ➔ Toque nos <b>3 pontinhos</b> (ou Ajustes).<br>
-          2. Selecione <b>Aparelhos conectados</b> ➔ <b>Conectar um aparelho</b>.<br>
-          3. Aponte a câmera para o QR Code acima.
-        </p>
-        <button type="button" onclick="gerarNovoQR()" class="tool-btn" style="padding: 10px 20px; font-weight: bold; font-size: 13px; border-radius: 6px;">
-          <i class="fa-solid fa-rotate-right"></i> Gerar Novo QR Code
-        </button>
       </div>
     </div>
   </main>
@@ -336,102 +340,161 @@ const PAGE_HTML = `<!DOCTYPE html>
     var mediaType = null;
     var mediaName = null;
 
+    // 1. Troca de Abas 100% Funcional e Direta
     function mudarAba(nome) {
-      var abas = ['novo', 'agendadas', 'calendario', 'conexao'];
+      var abas = document.querySelectorAll('.aba-conteudo');
       for (var i = 0; i < abas.length; i++) {
-        var a = document.getElementById('tab-' + abas[i]);
-        if (a) a.style.display = 'none';
-        var b = document.getElementById('btn-' + abas[i]);
-        if (b) b.className = '';
+        abas[i].style.display = 'none';
       }
-      var ativa = document.getElementById('tab-' + nome);
-      if (ativa) ativa.style.display = 'block';
+
+      var botoes = document.querySelectorAll('.nav-btn');
+      for (var j = 0; j < botoes.length; j++) {
+        botoes[j].classList.remove('active');
+      }
+
+      var abaAtiva = document.getElementById('aba-' + nome);
+      if (abaAtiva) {
+        abaAtiva.style.display = 'block';
+      }
+
       var btnAtivo = document.getElementById('btn-' + nome);
-      if (btnAtivo) btnAtivo.className = 'active';
+      if (btnAtivo) {
+        btnAtivo.classList.add('active');
+      }
 
       if (nome === 'agendadas') carregar();
       if (nome === 'calendario') renderizarGradeCalendario();
     }
 
-    function trocarTipo(isGrupo) {
-      document.getElementById('campoContato').style.display = (isGrupo ? 'none' : 'block');
-      document.getElementById('campoGrupo').style.display = (isGrupo ? 'block' : 'none');
-      atualizarPrevia();
+    // 2. Atualização de Texto na Prévia em Tempo Real
+    function atualizarTexto() {
+      var campo = document.getElementById('msg');
+      var previa = document.getElementById('previewTexto');
+      if (campo && previa) {
+        var val = campo.value;
+        if (val && val.trim() !== '') {
+          previa.innerText = val;
+        } else {
+          previa.innerText = (mediaData ? '' : 'Sua mensagem vai aparecer aqui...');
+        }
+      }
     }
 
-    function processarArquivo(input) {
-      if (!input.files || !input.files[0]) return;
-      var file = input.files[0];
-      mediaName = file.name;
-      document.getElementById('fileLabel').innerText = 'Anexo: ' + file.name;
-      document.getElementById('btnRemoverMidia').style.display = 'inline-block';
+    // 3. Atualização de Nome do Destinatário na Prévia
+    function atualizarNome() {
+      var nomeInput = document.getElementById('nome');
+      var destInput = document.getElementById('dest');
+      var prevNome = document.getElementById('previewDestNome');
 
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        mediaData = e.target.result;
+      var nome = (nomeInput && nomeInput.value) ? nomeInput.value : '';
+      var dest = (destInput && destInput.value) ? destInput.value : '';
+
+      if (prevNome) {
+        prevNome.innerText = nome || dest || 'Destinatário';
+      }
+    }
+
+    // 4. Alternar entre Contato e Grupo
+    function alternarTipoDestino(tipo) {
+      var divContato = document.getElementById('campoContato');
+      var divGrupo = document.getElementById('campoGrupo');
+      var prevNome = document.getElementById('previewDestNome');
+
+      if (tipo === 'group') {
+        if (divContato) divContato.style.display = 'none';
+        if (divGrupo) divGrupo.style.display = 'block';
+        var select = document.getElementById('selectGrupo');
+        if (prevNome && select && select.options[select.selectedIndex]) {
+          prevNome.innerText = select.options[select.selectedIndex].text;
+        }
+      } else {
+        if (divContato) divContato.style.display = 'block';
+        if (divGrupo) divGrupo.style.display = 'none';
+        atualizarNome();
+      }
+    }
+
+    function aoMudarGrupo() {
+      var select = document.getElementById('selectGrupo');
+      var prevNome = document.getElementById('previewDestNome');
+      if (select && prevNome && select.selectedIndex >= 0) {
+        prevNome.innerText = select.options[select.selectedIndex].text;
+      }
+    }
+
+    // 5. Exibir Foto, Vídeo ou Áudio na Prévia
+    function aoSelecionarArquivo(input) {
+      if (!input || !input.files || !input.files[0]) return;
+      var arquivo = input.files[0];
+      mediaName = arquivo.name;
+
+      var label = document.getElementById('fileLabel');
+      if (label) label.innerText = 'Anexo: ' + arquivo.name;
+
+      var btnRemover = document.getElementById('btnRemoverMidia');
+      if (btnRemover) btnRemover.style.display = 'inline-block';
+
+      var leitor = new FileReader();
+      leitor.onload = function(evento) {
+        mediaData = evento.target.result;
         var img = document.getElementById('previewImg');
         var vid = document.getElementById('previewVideo');
         var aud = document.getElementById('previewAudio');
 
-        img.style.display = 'none';
-        vid.style.display = 'none';
-        aud.style.display = 'none';
+        if (img) img.style.display = 'none';
+        if (vid) vid.style.display = 'none';
+        if (aud) aud.style.display = 'none';
 
-        if (file.type.indexOf('image') !== -1) {
+        if (arquivo.type.indexOf('image') !== -1) {
           mediaType = 'image';
-          img.src = mediaData;
-          img.style.display = 'block';
-        } else if (file.type.indexOf('video') !== -1) {
+          if (img) {
+            img.src = mediaData;
+            img.style.display = 'block';
+          }
+        } else if (arquivo.type.indexOf('video') !== -1) {
           mediaType = 'video';
-          vid.src = mediaData;
-          vid.style.display = 'block';
-        } else if (file.type.indexOf('audio') !== -1) {
+          if (vid) {
+            vid.src = mediaData;
+            vid.style.display = 'block';
+          }
+        } else if (arquivo.type.indexOf('audio') !== -1) {
           mediaType = 'audio';
-          aud.src = mediaData;
-          aud.style.display = 'block';
+          if (aud) {
+            aud.src = mediaData;
+            aud.style.display = 'block';
+          }
         }
-        atualizarPrevia();
+        atualizarTexto();
       };
-      reader.readAsDataURL(file);
+      leitor.readAsDataURL(arquivo);
     }
 
     function removerMidia() {
       mediaData = null; mediaType = null; mediaName = null;
-      document.getElementById('fileInput').value = '';
-      document.getElementById('fileLabel').innerText = 'Clique para escolher Foto, Áudio ou Vídeo';
-      document.getElementById('btnRemoverMidia').style.display = 'none';
-      document.getElementById('previewImg').style.display = 'none';
-      document.getElementById('previewVideo').style.display = 'none';
-      document.getElementById('previewAudio').style.display = 'none';
-      atualizarPrevia();
+      var fileInp = document.getElementById('fileInput');
+      if (fileInp) fileInp.value = '';
+
+      var label = document.getElementById('fileLabel');
+      if (label) label.innerText = 'Clique para escolher Foto, Áudio ou Vídeo';
+
+      var btnRemover = document.getElementById('btnRemoverMidia');
+      if (btnRemover) btnRemover.style.display = 'none';
+
+      var img = document.getElementById('previewImg');
+      var vid = document.getElementById('previewVideo');
+      var aud = document.getElementById('previewAudio');
+      if (img) img.style.display = 'none';
+      if (vid) vid.style.display = 'none';
+      if (aud) aud.style.display = 'none';
+
+      atualizarTexto();
     }
 
     function inserirEmoji(emoji) {
       var txt = document.getElementById('msg');
-      txt.value += emoji;
-      atualizarPrevia();
-    }
-
-    function atualizarPrevia() {
-      var msgBox = document.getElementById('msg');
-      var txt = document.getElementById('previewTexto');
-      if (msgBox && txt) {
-        txt.innerText = msgBox.value ? msgBox.value : 'Sua mensagem vai aparecer aqui...';
-      }
-
-      var nome = document.getElementById('nome').value;
-      var dest = document.getElementById('dest').value;
-      var previewNome = document.getElementById('previewDestNome');
-      if (previewNome) {
-        previewNome.innerText = nome ? nome : (dest ? dest : 'Destinatário');
-      }
-
-      var agora = new Date();
-      var h = (agora.getHours() < 10 ? '0' : '') + agora.getHours();
-      var m = (agora.getMinutes() < 10 ? '0' : '') + agora.getMinutes();
-      var previewHora = document.getElementById('previewHora');
-      if (previewHora) {
-        previewHora.innerText = h + ':' + m;
+      if (txt) {
+        txt.value += emoji;
+        atualizarTexto();
       }
     }
 
@@ -445,7 +508,7 @@ const PAGE_HTML = `<!DOCTYPE html>
         }
         var statG = document.getElementById('statGrupos');
         if (statG) statG.innerText = grupos.length;
-      });
+      }).catch(function(e){ console.error(e); });
     }
 
     function carregar() {
@@ -476,7 +539,7 @@ const PAGE_HTML = `<!DOCTYPE html>
             }).join('');
           }
         }
-      });
+      }).catch(function(e){ console.error(e); });
     }
 
     function renderizarGradeCalendario() {
@@ -510,16 +573,18 @@ const PAGE_HTML = `<!DOCTYPE html>
     function verDia(dataIso, dia) {
       var eventos = dados.filter(function(x){ return x.scheduled_at && x.scheduled_at.indexOf(dataIso) === 0; });
       var div = document.getElementById('calDetalheDia');
-      div.style.display = 'block';
+      if (div) div.style.display = 'block';
       document.getElementById('calTituloDetalhe').innerText = 'Agendamentos para o dia ' + dia + ' (' + eventos.length + ')';
 
       var lista = document.getElementById('calListaDetalhes');
-      if (eventos.length === 0) {
-        lista.innerHTML = '<p style="color: #64748b; font-size: 13px;">Nenhuma mensagem agendada para este dia.</p>';
-      } else {
-        lista.innerHTML = eventos.map(function(e){
-          return '<div class="item-card"><div><strong>' + (e.recipient_name || e.recipient) + '</strong><p>' + e.message + '</p><small>Horário: ' + new Date(e.scheduled_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + '</small></div></div>';
-        }).join('');
+      if (lista) {
+        if (eventos.length === 0) {
+          lista.innerHTML = '<p style="color: #64748b; font-size: 13px;">Nenhuma mensagem agendada para este dia.</p>';
+        } else {
+          lista.innerHTML = eventos.map(function(e){
+            return '<div class="item-card"><div><strong>' + (e.recipient_name || e.recipient) + '</strong><p>' + e.message + '</p><small>Horário: ' + new Date(e.scheduled_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + '</small></div></div>';
+          }).join('');
+        }
       }
     }
 
@@ -530,7 +595,8 @@ const PAGE_HTML = `<!DOCTYPE html>
 
     function salvar(e) {
       e.preventDefault();
-      var isGrupo = document.querySelector('input[name="tipo"]:checked').value === 'group';
+      var radioGrupo = document.querySelector('input[name="tipo"][value="group"]');
+      var isGrupo = radioGrupo && radioGrupo.checked;
       var recipient = isGrupo ? document.getElementById('selectGrupo').value : document.getElementById('dest').value;
       var recipient_name = document.getElementById('nome').value || (isGrupo ? document.getElementById('selectGrupo').options[document.getElementById('selectGrupo').selectedIndex].text : recipient);
 
@@ -570,15 +636,24 @@ const PAGE_HTML = `<!DOCTYPE html>
       }
     }
 
+    // Inicialização da hora atual no balãozinho
+    var agora = new Date();
+    var h = (agora.getHours() < 10 ? '0' : '') + agora.getHours();
+    var m = (agora.getMinutes() < 10 ? '0' : '') + agora.getMinutes();
+    var prevH = document.getElementById('previewHora');
+    if (prevH) prevH.innerText = h + ':' + m;
+
     carregarGrupos();
     carregar();
-    atualizarPrevia();
   </script>
 </body>
 </html>`;
 
 app.get('*', (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.send(PAGE_HTML);
 });
 
