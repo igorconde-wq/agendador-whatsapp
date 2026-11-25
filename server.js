@@ -65,11 +65,190 @@ cron.schedule('*/20 * * * * *', () => {
   });
 });
 
-const HTML_CONTENT = Buffer.from("PEFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9InB0LUJSIj4KPGhlYWQ+CiAgPG1ldGEgY2hhcnNldD0iVVRGLTgiPgogIDxtZXRhIG5hbWU9InZpZXdwb3J0IiBjb250ZW50PSJ3aWR0aD1kZXZpY2Utd2lkdGgsIGluaXRpYWwtc2NhbGU9MS4wIj4KICA8dGl0bGU+V2hhdHNTY2hlZHVsZXIgTnV2ZW08L3RpdGxlPgogIDxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi50YWlsd2luZGNzcy5jb20iPjwvc2NyaXB0PgogIDxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9jbmpmcy5jbG91ZGZsYXJlLmNvbS9hamF4L2xpYnMvZm9udC1hd2Vzb21lLzYuNC4wL2Nzcy9hbGwubWluLmNzcyI+CiAgPHN0eWxlPgogICAgYm9keSB7IGJhY2tncm91bmQtY29sb3I6ICMwYzEzMTc7IGNvbG9yOiAjZTllZGVmOyBmYW1pbHk6IC1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtRm9udCwgIlNlZ29lIFVJIiwgUm9ib3RvLCBzYW5zLXNlcmlmOyB9CiAgICAud2EtY2FyZCB7IGJhY2tncm91bmQtY29sb3I6ICMxMTFiMjE7IGJvcmRlcjogMXB4IHNvbGlkICMyMjJlMzU7IH0KICAgIC53YS1pbnB1dCB7IGJhY2tncm91bmQtY29sb3I6ICMyYTM5NDI7IGJvcmRlcjogMXB4IHNvbGlkICMzYjRhNTQ7IGNvbG9yOiAjZmZmOyB9CiAgICAud2EtaW5wdXQ6Zm9jdXMgeyBib3JkZXItY29sb3I6ICMwMGE4ODQ7IG91dGxpbmU6IG5vbmU7IH0KICAgIC50YWItYWN0IHsgYm9yZGVyLWJvdHRvbTogM3B4IHNvbGlkICMwMGE4ODQ7IGNvbG9yOiAjMDBhODg0OyBmb250LXdlaWdodDogYm9sZDsgfQogIDwvc3R5bGU+CjwvaGVhZD4KPGJvZHkgY2xhc3M9Im1pbi1oLXNjcmVlbiBmbGV4IGZsZXgtY29sIj4KICA8aGVhZGVyIGNsYXNzPSJiZy1bIzIwMmMzM10gcC00IGZsZXganVzdGlmeS1iZXR3ZWVuIGl0ZW1zLWNlbnRlciBib3JkZXItYiBib3JkZXItWyMzMTNkNDVdIj4KICAgIDxkaXYgY2xhc3M9ImZsZXggaXRlbXMtY2VudGVyIGdhcC0yIj4KICAgICAgPGkgY2xhc3M9ImZhLWJyYW5kcyBmYS13aGF0c2FwcCB0ZXh0LWdyZWVuLTUwMCB0ZXh0LTJ4bCI+PC9pPgogICAgICA8c3BhbiBjbGFzcz0iZm9udC1ib2xkIHRleHQtbGciPldoYXRzU2NoZWR1bGVyIE51dmVtPC9zcGFuPgogICAgPC9kaXY+CiAgICA8c3BhbiBjbGFzcz0idGV4dC14cyBiZy1ncmVlbi05MDAvNjAgdGV4dC1ncmVlbi00MDAgcHgtMyBweS0xIHJvdW5kZWQtZnVsbCBib3JkZXIgYm9yZGVyLWdyZWVuLTcwMC81MCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41Ij4KICAgICAgPHNwYW4gY2xhc3M9InctMiBoLTIgcm91bmRlZC1mdWxsIGJnLWdyZWVuLTQwMCBhbmltYXRlLXB1bHNlIj48L3NwYW4+IE9ubGluZSAyNGgKICAgIDwvc3Bhbj4KICA8L2hlYWRlcj4KCiAgPG5hdiBjbGFzcz0iYmctWyMxMTFiMjFdIHB4LTYgZmxleCBnYXAtNiB0ZXh0LXNtIGJvcmRlci1iIGJvcmRlci1bIzIyMmUzNV0iPgogICAgPGJ1dHRvbiBvbmNsaWNrPSJ0YWIoJ25vdm8nKSIgaWQ9ImItbm92byIgY2xhc3M9InB5LTMgdGFiLWFjdCB0cmFuc2l0aW9uIj48aSBjbGFzcz0iZmEtc29saWQgZmEtcGx1cy1jaXJjbGUgbXItMSI+PC9pPiBOb3ZvIEFnZW5kYW1lbnRvPC9idXR0b24+CiAgICA8YnV0dG9uIG9uY2xpY2s9InRhYignYWdlbmRhZGFzJykiIGlkPSJiLWFnZW5kYWRhcyIgY2xhc3M9InB5LTMgdGV4dC1ncmF5LTQwMCB0cmFuc2l0aW9uIj48aSBjbGFzcz0iZmEtc29saWQgZmEtY2xvY2sgbXItMSI+PC9pPiBNZW5zYWdlbnMgQWdlbmRhZGFzPC9idXR0b24+CiAgICA8YnV0dG9uIG9uY2xpY2s9InRhYignY2FsZW5kYXJpbycpIiBpZD0iYi1jYWxlbmRhcmlvIiBjbGFzcz0icHktMyB0ZXh0LWdyYXktNDAwIHRyYW5zaXRpb24iPjxpIGNsYXNzPSJmYS1zb2xpZCBmYS1jYWxlbmRhci1kYXlzIG1yLTEiPjwvaT4gQ2FsZW5kw6FyaW88L2J1dHRvbj4KICA8L25hdj4KCiAgPG1haW4gY2xhc3M9InAtNiBtYXgtdy0zbHggbXgtYXV0byB3LWZ1bGwgZmxleC0xIj4KICAgIDwhLS0gQWJhIE5vdm8gQWdlbmRhbWVudG8gLS0+CiAgICA8ZGl2IGlkPSJ0LW5vdm8iIGNsYXNzPSJ3YS1jYXJkIHAtNiByb3VuZGVkLXhsIHNoYWRvdy1sZyI+CiAgICAgIDxoMiBjbGFzcz0idGV4dC1sZyBmb250LXNlbWlib2xkIHRleHQtZ3JlZW4tNDAwIG1iLTQgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIiPgogICAgICAgIDxpIGNsYXNzPSJmYS1zb2xpZCBmYS1wYXBlci1wbGFuZSI+PC9pPiBBZ2VuZGFyIE1lbnNhZ2VtCiAgICAgIDwvaDI+CiAgICAgIDxmb3JtIG9uc3VibWl0PSJzYXZlKGV2ZW50KSIgY2xhc3M9InNwYWNlLXktNCI+CiAgICAgICAgPGRpdj4KICAgICAgICAgIDxsYWJlbCBjbGFzcz0iYmxvY2sgdGV4dC14cyB0ZXh0LWdyYXktNDAwIG1iLTEiPkRlc3Rpbm8gZGEgTWVuc2FnZW08L2xhYmVsPgogICAgICAgICAgPGRpdiBjbGFzcz0iZmxleCBnYXAtNCBtYi0yIj4KICAgICAgICAgICAgPGxhYmVsIGNsYXNzPSJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMiB0ZXh0LXNtIGN1cnNvci1wb2ludGVyIj48aW5wdXQgdHlwZT0icmFkaW8iIG5hbWU9InQiIHZhbHVlPSJjb250YWN0IiBjaGVja2VkIG9uY2hhbmdlPSJ0b2dnbGUoZmFsc2UpIiBjbGFzcz0iYWNjZW50LWdyZWVuLTUwMCI+IENvbnRhdG8gSW5kaXZpZHVhbDwvbGFiZWw+CiAgICAgICAgICAgIDxsYWJlbCBjbGFzcz0iZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIgdGV4dC1zbSBjdXJzb3ItcG9pbnRlciI+PGlucHV0IHR5cGU9InJhZGlvIiBuYW1lPSJ0IiB2YWx1ZT0iZ3JvdXAiIG9uY2hhbmdlPSJ0b2dnbGUodHJ1ZSkiIGNsYXNzPSJhY2NlbnQtZ3JlZW4tNTAwIj4gR3J1cG8gZG8gV2hhdHNBcHA8L2xhYmVsPgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8aW5wdXQgdHlwZT0idGV4dCIgaWQ9ImRlc3QiIHJlcXVpcmVkIHBsYWNlaG9sZGVyPSJOw7ptZXJvIGNvbSBEREkgZSBEREQgKGV4OiA1NTExOTk5OTk4ODg4KSIgY2xhc3M9IndhLWlucHV0IHctZnVsbCBwLTIuNSByb3VuZGVkLWxnIHRleHQtc20iPgogICAgICAgICAgPHAgeWQ9Imdyb3VwVGlwIiBjbGFzcz0idGV4dC14cyB0ZXh0LWdyYXktNTAwIG10LTEgaGlkZGVuIj5QYXJhIGdydXBvcywgaW5mb3JtZSBvIElEIGRvIGdydXBvICh0ZXJtaW5hZG8gZW0gQGcudXMpPC9wPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXY+CiAgICAgICAgICA8bGFiZWwgY2xhc3M9ImJsb2NrIHRleHQteHMgdGV4dC1ncmF5LTQwMCBtYi0xIj5Ob21lIHBhcmEgSWRlbnRpZmljYXIgKE9wY2lvbmFsKTwvbGFiZWw+CiAgICAgICAgICA8aW5wdXQgdHlwZT0idGV4dCIgaWQ9Im5vbWUiIHBsYWNlaG9sZGVyPSJFeDogR3J1cG8gZGEgRmFtw61saWEgb3UgQ2xpZW50ZSBKb8OjbyIgY2xhc3M9IndhLWlucHV0IHctZnVsbCBwLTIuNSByb3VuZGVkLWxnIHRleHQtc20iPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXY+CiAgICAgICAgICA8bGFiZWwgY2xhc3M9ImJsb2NrIHRleHQteHMgdGV4dC1ncmF5LTQwMCBtYi0xIj5UZXh0byBkYSBNZW5zYWdlbTwvbGFiZWw+CiAgICAgICAgICA8dGV4dGFyZWEgaWQ9Im1zZyIgcmVxdWlyZWQgcm93cz0iMyIgcGxhY2Vob2xkZXI9IkRpZ2l0ZSBhIG1lbnNhZ2VtIGEgc2VyIGVudmlhZGEuLi4iIGNsYXNzPSJ3YS1pbnB1dCB3LWZ1bGwgcC0yLjUgcm91bmRlZC1sZyB0ZXh0LXNtIj48L3RleHRhcmVhPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXY+CiAgICAgICAgICA8bGFiZWwgY2xhc3M9ImJsb2NrIHRleHQteHMgdGV4dC1ncmF5LTQwMCBtYi0xIj5EYXRhIGUgSG9yYSBkbyBFbnZpbzwvbGFiZWw+CiAgICAgICAgICA8aW5wdXQgdHlwZT0iZGF0ZXRpbWUtbG9jYWwiIGlkPSJkYXRhIiByZXF1aXJlZCBjbGFzcz0id2EtaW5wdXQgdy1mdWxsIHAtMi41IHJvdW5kZWQtbGcgdGV4dC1zbSI+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPGJ1dHRvbiB0eXBlPSJzdWJtaXQiIGNsYXNzPSJiZy1bIzAwYTg4NF0gaG92ZXI6YmctWyMwMjkwNmZdIHctZnVsbCBwLTMgcm91bmRlZC1sZyBmb250LXNlbWlib2xkIHRleHQtd2hpdGUgdHJhbnNpdGlvbiBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMiBzaGFkb3ctbWQiPgogICAgICAgICAgPGkgY2xhc3M9ImZhLXNvbGlkIGZhLWNhbGVuZGFyLWNoZWNrIj48L2k+IENvbmZpcm1hciBlIEFnZW5kYXIKICAgICAgICA8L2J1dHRvbj4KICAgICAgPC9mb3JtPgogICAgPC9kaXY+CgogICAgPCEtLSBBYmEgTWVuc2FnZW5zIEFnZW5kYWRhcyAtLT4KICAgIDxkaXYgaWQ9InQtYWdlbmRhZGFzIiBjbGFzcz0id2EtY2FyZCBwLTYgcm91bmRlZC14bCBzaGFkb3ctbGcgaGlkZGVuIj4KICAgICAgPGRpdiBjbGFzcz0iZmxleCBqdXN0aWZ5LWJldHdlZW4gaXRlbXMtY2VudGVyIG1iLTQiPgogICAgICAgIDxoMiBjbGFzcz0idGV4dC1sZyBmb250LXNlbWlib2xkIHRleHQtZ3JlZW4tNDAwIGZsZXggaXRlbXMtY2VudGVyIGdhcC0yIj4KICAgICAgICAgIDxpIGNsYXNzPSJmYS1zb2xpZCBmYS1jbG9jayI+PC9pPiBNZW5zYWdlbnMgQWdlbmRhZGFzIChQZW5kZW50ZXMpCiAgICAgICAgPC9oMj4KICAgICAgICA8YnV0dG9uIG9uY2xpY2s9ImxvYWQoKSIgY2xhc3M9InRleHQteHMgdGV4dC1ncmF5LTQwMCBob3Zlcjp0ZXh0LXdoaXRlIj48aSBjbGFzcz0iZmEtc29saWQgZmEtcm90YXRlLXJpZ2h0Ij48L2k+IEF0dWFsaXphcjwvYnV0dG9uPgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBpZD0ibGlzdGEiIGNsYXNzPSJzcGFjZS15LTMiPkNhcnJlZ2FuZG8uLi48L2Rpdj4KICAgIDwvZGl2PgoKICAgIDwhLS0gQWJhIENhbGVuZMOhcmlvIC0tPgogICAgPGRpdiBpZD0idC1jYWxlbmRhcmlvIiBjbGFzcz0id2EtY2FyZCBwLTYgcm91bmRlZC14bCBzaGFkb3ctbGcgaGlkZGVuIj4KICAgICAgPGgyIGNsYXNzPSJ0ZXh0LWxnIGZvbnQtc2VtaWJvbGQgdGV4dC1ncmF5LTQwMCBtYi00IGZsZXggaXRlbXMtY2VudGVyIGdhcC0yIj4KICAgICAgICA8aSBjbGFzcz0iZmEtc29saWQgZmEtY2FsZW5kYXItZGF5cyI+PC9pPiBDYWxlbmTDoXJpbyBkZSBNZW5zYWdlbnMKICAgICAgPC9oMj4KICAgICAgPGRpdiBpZD0iY2FsIiBjbGFzcz0ic3BhY2UteS0zIj5DYXJyZWdhbmRvLi4uPC9kaXY+CiAgICA8L2Rpdj4KICA8L21haW4+CgogIDxzY3JpcHQ+CiAgICB2YXIgZCA9IFtdOwogICAgZnVuY3Rpb24gdGFiKG4pIHsKICAgICAgWydub3ZvJywnYWdlbmRhZGFzJywnY2FsZW5kYXJpbyddLmZvckVhY2goZnVuY3Rpb24oeCkgewogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCd0LScgKyB4KS5jbGFzc0xpc3QudG9nZ2xlKCdoaWRkZW4nLCB4ICE9PSBuKTsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYi0nICsgeCkuY2xhc3NOYW1lID0geCA9PT0gbiA/ICdweS0zIHRhYi1hY3QgdHJhbnNpdGlvbicgOiAncHktMyB0ZXh0LWdyYXktNDAwIHRyYW5zaXRpb24nOwogICAgICB9KTsKICAgICAgaWYgKG4gIT09ICdub3ZvJykgbG9hZCgpOwogICAgfQogICAgZnVuY3Rpb24gdG9nZ2xlKGcpIHsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2Rlc3QnKS5wbGFjZWhvbGRlciA9IGcgPyAnSUQgZG8gR3J1cG8gKGV4OiAxMjAzNjMwQGcudXMpJyA6ICdOw7ptZXJvIGNvbSBEREkgZSBEREQgKGV4OiA1NTExOTk5OTk4ODg4KSc7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdncm91cFRpcCcpLmNsYXNzTGlzdC50b2dnbGUoJ2hpZGRlbicsICFnKTsKICAgIH0KICAgIGZ1bmN0aW9uIGxvYWQoKSB7CiAgICAgIGZldGNoKCcvYXBpL3NjaGVkdWxlcycpCiAgICAgICAgLnRoZW4oZnVuY3Rpb24ocikgeyByZXR1cm4gci5qc29uKCk7IH0pCiAgICAgICAgLnRoZW4oZnVuY3Rpb24oZGFkb3MpIHsKICAgICAgICAgIGQgPSBkYWRvczsKICAgICAgICAgIHZhciBwZW5kID0gZC5maWx0ZXIoZnVuY3Rpb24oeCkgeyByZXR1cm4geC5zdGF0dXMgPT09ICdwZW5kaW5nJzsgfSk7CiAgICAgICAgICB2YXIgbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdsaXN0YScpOwogICAgICAgICAgaWYgKHBlbmQubGVuZ3RoID09PSAwKSB7CiAgICAgICAgICAgIGwuaW5uZXJIVE1MID0gJzxwIGNsYXNzPSJ0ZXh0LWdyYXktNDAwIHRleHQtc20iPk5lbmh1bWEgbWVuc2FnZW0gYWdlbmRhZGEgbm8gbW9tZW50by48L3A+JzsKICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgIGwuaW5uZXJIVE1MID0gcGVuZC5tYXAoZnVuY3Rpb24oaSkgewogICAgICAgICAgICAgIHZhciB0YXJnZXQgPSBpLnJlY2lwaWVudF9uYW1lIHx8IGkucmVjaXBpZW50OwogICAgICAgICAgICAgIHZhciB0aXBvID0gaS5yZWNpcGllbnRfdHlwZSA9PT0gJ2dyb3VwJyA/ICdHcnVwbycgOiAnQ29udGF0byc7CiAgICAgICAgICAgICAgdmFyIGRhdGFGb3JtYXRhZGEgPSBuZXcgRGF0ZShpLnNjaGVkdWxlZF9hdCkudG9Mb2NhbGVTdHJpbmcoJ3B0LUJSJyk7CiAgICAgICAgICAgICAgcmV0dXJuICc8ZGl2IGNsYXNzPSJiZy1bIzIwMmMzM10gcC00IHJvdW5kZWQtbGcgZmxleCBqdXN0aWZ5LWJldHdlZW4gaXRlbXMtY2VudGVyIGJvcmRlciBib3JkZXItWyMyYTM5NDJdIicgKwogICAgICAgICAgICAgICAgJzxkaXY+JyArCiAgICAgICAgICAgICAgICAgICc8cCBjbGFzcz0iZm9udC1ib2xkIHRleHQtd2hpdGUgdGV4dC1zbSI+JyArIHRhcmdldCArICcgPHNwYW4gY2xhc3M9InRleHQteHsgdGV4dC1ibHVlLTQwMCI+KCcgKyB0aXBvICsgJykrL3NwYW4+PC9wPicgKwogICAgICAgICAgICAgICAgICAnPHAgY2xhc3M9InRleHQtc20gdGV4dC1ncmF5LTMwMCBteS0xIGJnLVsjMTExYjIxXSBwLTIgcm91bmRlZCBib3JkZXIgYm9yZGVyLVsjMjIyZTM1XSI+JyArIGkubWVzc2FnZSArICc8L3A+JyArCiAgICAgICAgICAgICAgICAgICc8cCBjbGFzcz0idGV4dC14cyB0ZXh0LWdyYXktNDAwIj48aSBjbGFzcz0iZmEtcmVndWxhciBmYS1jbG9jayBtci0xIj48L2k+IFBhcmE6ICcgKyBkYXRhRm9ybWF0YWRhICsgJzwvcD4nICsKICAgICAgICAgICAgICAgICc8L2Rpdj4nICsKICAgICAgICAgICAgICAgICc8YnV0dG9uIG9uY2xpY2s9ImRlbCgnICsgaS5pZCArICcpIiBjbGFzcz0iYmctcmVkLTYwMCBob3ZlcjpiZy1yZWQtNzAwIHRleHQteHMgcHgtMyBweS0yIHJvdW5kZWQgZm9udC1ib2xkIHRleHQtd2hpdGUgbWwtNCB0cmFuc2l0aW9uIj5DYW5jZWxhcjwvYnV0dG9uPicgKwogICAgICAgICAgICAgICc8L2Rpdj4nOwogICAgICAgICAgICB9KS5qb2luKCcnKTsKICAgICAgICAgIH0KCiAgICAgICAgICB2YXIgYyA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjYWwnKTsKICAgICAgICAgIGlmIChkLmxlbmd0aCA9PT0gMCkgewogICAgICAgICAgICBjLmlubmVySFRNTCA9ICc8cCBjbGFzcz0idGV4dC1ncmF5LTQwMCB0ZXh0LXNtIj5OZW5odW1hIGV2ZW50byByZWdpc3RyYWRvLjwvcD4nOwogICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgYy5pbm5lckhUTUwgPSBkLm1hcChmdW5jdGlvbihpKSB7CiAgICAgICAgICAgICAgdmFyIHN0ID0gaS5zdGF0dXMgPT09ICdzZW50JyA/ICfigJMgRW52aWFkYScgOiAoaS5zdGF0dXMgPT09ICdwZW5kaW5nJyA/ICfig7MgQWdlbmRhZGEnIDogJ+KchSBDYW5jZWxhZGEnKTsKICAgICAgICAgICAgICB2YXIgc3RDb2wgPSBpLnN0YXR1cyA9PT0gJ3NlbnQnID8gJ3RleHQtZ3JlZW4tNDAwIGZvbnQtYm9sZCcgOiAoaS5zdGF0dXMgPT09ICdwZW5kaW5nJyA/ICd0ZXh0LXllbGxvdy00MDAgZm9udC1ib2xkJyA6ICd0ZXh0LXJlZC00MDAgZm9udC1ib2xkJyk7CiAgICAgICAgICAgICAgdmFyIGR0ID0gbmV3IERhdGUoaS5zY2hlZHVsZWRfYXQpLnRvTG9jYWxlU3RyaW5nKCdwdC1CUicpOwogICAgICAgICAgICAgIHZhciB0YXJnZXQgPSBpLnJlY2lwaWVudF9uYW1lIHx8IGkucmVjaXBpZW50OwogICAgICAgICAgICAgIHZhciB0aXBvID0gaS5yZWNpcGllbnRfdHlwZSA9PT0gJ2dyb3VwJyA/ICdHcnVwbycgOiAnQ29udGF0byBJbmRpdmlkdWFsJzsKICAgICAgICAgICAgICByZXR1cm4gJzxkaXYgY2xhc3M9ImJnLVsjMjAyYzMzXSBwLTQgcm91bmRlZC1sZyBib3JkZXIgYm9yZGVyLVsjMmEzOTQyXSBtYi0yIj4nICsKICAgICAgICAgICAgICAgICc8ZGl2IGNsYXNzPSJmbGV4IGp1c3RpZnktYmV0d2VlbiB0ZXh0LXhzIG1iLTEiPjxzcGFuIGNsYXNzPSInICsgc3RDb2wgKyAnIj4nICsgc3QgKyAnPC9zcGFuPjxzcGFuPicgKyBkdCArICc8L3NwYW4+PC9kaXY+JyArCiAgICAgICAgICAgICAgICAnPHAgY2xhc3M9InRleHQteHMgdGV4dC1ncmF5LTMwMCI+PHN0cm9uZz5PbmRlIHNlcsOhIHBvc3RhZGE6PC9zdHJvbmc+ICcgKyB0YXJnZXQgKyAnICgnICsgdGlwbyArICcpPC9wPicgKwogICAgICAgICAgICAgICAgJzxwIGNsYXNzPSJ0ZXh0LXhzIHRleHQtd2hpdGUgbXQtMSBiZy1bIzExMWIyMV0gcC0yIHJvdW5kZWQiPjxzdHJvbmc+VGV4dG86PC9zdHJvbmc+ICcgKyBpLm1lc3NhZ2UgKyAnPC9wPicgKwogICAgICAgICAgICAgICc8L2Rpdj4nOwogICAgICAgICAgICB9KS5qb2luKCcnKTsKICAgICAgICAgIH0KICAgICAgICB9KTsKICAgIH0KICAgIGZ1bmN0aW9uIHNhdmUoZSkgewogICAgICBlLnByZXZlbnREZWZhdWx0KCk7CiAgICAgIGZldGNoKCcvYXBpL3NjaGVkdWxlcycsIHsKICAgICAgICBtZXRob2Q6ICdQT1NUJywKICAgICAgICBoZWFkZXJzOiB7ICdDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24vanNvbicgfSwKICAgICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7CiAgICAgICAgICByZWNpcGllbnRfdHlwZTogZG9jdW1lbnQucXVlcnlTZWxlY3RvcignaW5wdXRbbmFtZT0idCJdOmNoZWNrZWQnKS52YWx1ZSwKICAgICAgICAgIHJlY2lwaWVudDogZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2Rlc3QnKS52YWx1ZSwKICAgICAgICAgIHJlY2lwaWVudF9uYW1lOiBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbm9tZScpLnZhbHVlLAogICAgICAgICAgbWVzc2FnZTogZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21zZycpLnZhbHVlLAogICAgICAgICAgc2NoZWR1bGVkX2F0OiBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGF0YScpLnZhbHVlCiAgICAgICAgfSkKICAgICAgfSkudGhlbihmdW5jdGlvbihyKSB7CiAgICAgICAgaWYgKHIub2spIHsKICAgICAgICAgIGFsZXJ0KCdNZW5zYWdlbSBhZ2VuZGFkYSBjb20gc3VjZXNzbyEnKTsKICAgICAgICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJ2Zvcm0nKS5yZXNldCgpOwogICAgICAgICAgdGFiKCdhZ2VuZGFkYXMnKTsKICAgICAgICB9IGVsc2UgewogICAgICAgICAgYWxlcnQoJ0Vycm8gYW8gYWdlbmRhci4nKTsKICAgICAgICB9CiAgICAgIH0pOwogICAgfQogICAgZnVuY3Rpb24gZGVsKGlkKSB7CiAgICAgIGlmIChjb25maXJtKCdDYW5jZWxhciBlc3RlIGFnZW5kYW1lbnRvPycpKSB7CiAgICAgICAgZmV0Y2goJy9hcGkvc2NoZWR1bGVzLycgKyBpZCwgeyBtZXRob2Q6ICdERUxFVEUnIH0pLnRoZW4oZnVuY3Rpb24oKSB7IGxvYWQoKTsgfSk7CiAgICAgIH0KICAgIH0KICA8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+", "base64").toString("utf-8");
+const PAGE_HTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsScheduler Nuvem</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background-color: #f0f2f5; color: #111b21; }
+    header { background-color: #00a884; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    header h1 { font-size: 20px; font-weight: bold; }
+    .status-badge { background: #008069; color: white; font-size: 12px; padding: 4px 12px; border-radius: 12px; font-weight: 500; }
+    nav { background-color: white; border-bottom: 1px solid #e9edef; display: flex; gap: 8px; padding: 0 24px; }
+    nav button { background: none; border: none; padding: 14px 16px; font-size: 14px; font-weight: 500; color: #54656f; cursor: pointer; border-bottom: 3px solid transparent; }
+    nav button.active { color: #00a884; border-bottom-color: #00a884; font-weight: bold; }
+    main { max-width: 800px; margin: 24px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card h2 { font-size: 18px; margin-bottom: 16px; color: #008069; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; color: #54656f; margin-bottom: 6px; font-weight: 500; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d7db; border-radius: 6px; font-size: 14px; outline: none; }
+    .form-group input:focus, .form-group textarea:focus { border-color: #00a884; }
+    .radio-group { display: flex; gap: 20px; margin-bottom: 10px; }
+    .btn-submit { background-color: #00a884; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; width: 100%; cursor: pointer; transition: 0.2s; }
+    .btn-submit:hover { background-color: #008069; }
+    .item-card { background: #f8f9fa; border: 1px solid #e9edef; border-radius: 8px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .item-info strong { font-size: 15px; color: #111b21; }
+    .item-info p { font-size: 13px; color: #3b4a54; margin: 4px 0; }
+    .item-info small { font-size: 12px; color: #667781; }
+    .btn-cancel { background-color: #ea4335; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .btn-cancel:hover { background-color: #d33426; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WhatsScheduler Nuvem</h1>
+    <span class="status-badge">● Sistema Ativo 24h</span>
+  </header>
+
+  <nav>
+    <button onclick="tab('novo')" id="btn-novo" class="active">Novo Agendamento</button>
+    <button onclick="tab('agendadas')" id="btn-agendadas">Mensagens Agendadas</button>
+    <button onclick="tab('calendario')" id="btn-calendario">Calendário</button>
+  </nav>
+
+  <main>
+    <!-- Aba Novo -->
+    <div id="tab-novo" class="card">
+      <h2>Agendar Nova Mensagem</h2>
+      <form onsubmit="salvar(event)">
+        <div class="form-group">
+          <label>Destino da Mensagem</label>
+          <div class="radio-group">
+            <label><input type="radio" name="tipo" value="contact" checked onchange="trocarTipo(false)"> Contato Individual</label>
+            <label><input type="radio" name="tipo" value="group" onchange="trocarTipo(true)"> Grupo do WhatsApp</label>
+          </div>
+          <input type="text" id="dest" required placeholder="Número com DDD (ex: 5511999998888)">
+          <small id="dicaGrupo" style="color: #667781; display: none; margin-top: 4px;">Informe o ID do grupo (terminado em @g.us)</small>
+        </div>
+
+        <div class="form-group">
+          <label>Nome para Identificação (Opcional)</label>
+          <input type="text" id="nome" placeholder="Ex: Grupo da Família ou Cliente João">
+        </div>
+
+        <div class="form-group">
+          <label>Mensagem</label>
+          <textarea id="msg" required rows="3" placeholder="Digite o texto da mensagem que será enviada..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Data e Hora do Envio</label>
+          <input type="datetime-local" id="data" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Confirmar e Agendar</button>
+      </form>
+    </div>
+
+    <!-- Aba Agendadas -->
+    <div id="tab-agendadas" class="card hidden">
+      <h2>Mensagens Agendadas (Pendentes)</h2>
+      <div id="listaAgendadas">Carregando agendamentos...</div>
+    </div>
+
+    <!-- Aba Calendário -->
+    <div id="tab-calendario" class="card hidden">
+      <h2>Calendário de Mensagens</h2>
+      <div id="listaCalendario">Carregando eventos...</div>
+    </div>
+  </main>
+
+  <script>
+    var dados = [];
+    function tab(nome) {
+      ['novo', 'agendadas', 'calendario'].forEach(function(x) {
+        document.getElementById('tab-' + x).classList.toggle('hidden', x !== nome);
+        document.getElementById('btn-' + x).className = (x === nome ? 'active' : '');
+      });
+      if (nome !== 'novo') carregar();
+    }
+    function trocarTipo(isGrupo) {
+      document.getElementById('dest').placeholder = isGrupo ? 'ID do Grupo (ex: 1203630@g.us)' : 'Número com DDD (ex: 5511999998888)';
+      document.getElementById('dicaGrupo').style.display = isGrupo ? 'block' : 'none';
+    }
+    function carregar() {
+      fetch('/api/schedules').then(function(r){ return r.json(); }).then(function(res) {
+        dados = res;
+        var pend = dados.filter(function(x){ return x.status === 'pending'; });
+        var l = document.getElementById('listaAgendadas');
+        if (pend.length === 0) {
+          l.innerHTML = '<p style="color: #667781;">Nenhuma mensagem agendada no momento.</p>';
+        } else {
+          l.innerHTML = pend.map(function(item) {
+            var target = item.recipient_name || item.recipient;
+            var t = item.recipient_type === 'group' ? 'Grupo' : 'Contato';
+            var d = new Date(item.scheduled_at).toLocaleString('pt-BR');
+            return '<div class="item-card">' +
+              '<div class="item-info">' +
+                '<strong>' + target + ' (' + t + ')</strong>' +
+                '<p>' + item.message + '</p>' +
+                '<small>Previsto para: ' + d + '</small>' +
+              '</div>' +
+              '<button onclick="cancelar(' + item.id + ')" class="btn-cancel">Cancelar</button>' +
+            '</div>';
+          }).join('');
+        }
+
+        var c = document.getElementById('listaCalendario');
+        if (dados.length === 0) {
+          c.innerHTML = '<p style="color: #667781;">Nenhum evento registrado.</p>';
+        } else {
+          c.innerHTML = dados.map(function(item) {
+            var st = item.status === 'sent' ? 'Enviada' : (item.status === 'pending' ? 'Agendada' : 'Cancelada');
+            var cor = item.status === 'sent' ? '#00a884' : (item.status === 'pending' ? '#f59e0b' : '#ea4335');
+            var d = new Date(item.scheduled_at).toLocaleString('pt-BR');
+            var target = item.recipient_name || item.recipient;
+            var t = item.recipient_type === 'group' ? 'Grupo' : 'Contato';
+            return '<div class="item-card">' +
+              '<div class="item-info">' +
+                '<strong><span style="color:' + cor + ';">● ' + st + '</span> — ' + target + ' (' + t + ')</strong>' +
+                '<p><strong>Mensagem:</strong> ' + item.message + '</p>' +
+                '<small>Data: ' + d + '</small>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+      });
+    }
+    function salvar(e) {
+      e.preventDefault();
+      fetch('/api/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient_type: document.querySelector('input[name="tipo"]:checked').value,
+          recipient: document.getElementById('dest').value,
+          recipient_name: document.getElementById('nome').value,
+          message: document.getElementById('msg').value,
+          scheduled_at: document.getElementById('data').value
+        })
+      }).then(function(r) {
+        if (r.ok) {
+          alert('Mensagem agendada com sucesso!');
+          document.querySelector('form').reset();
+          tab('agendadas');
+        } else {
+          alert('Erro ao agendar.');
+        }
+      });
+    }
+    function cancelar(id) {
+      if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
+        fetch('/api/schedules/' + id, { method: 'DELETE' }).then(function() { carregar(); });
+      }
+    }
+  </script>
+</body>
+</html>`;
 
 app.get('*', (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(HTML_CONTENT);
+  res.send(PAGE_HTML);
 });
 
 app.listen(PORT, () => console.log('Servidor rodando na porta ' + PORT));
